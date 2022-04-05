@@ -5,6 +5,7 @@ from pathlib import Path
 import itertools
 
 from sklearn import preprocessing
+from sklearn import metrics
 
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -233,7 +234,7 @@ class Manager:
 
         l1 = LSTM(16, return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
         b1 = BatchNormalization()(l1)
-        l2_1 = LSTM(16,return_sequences=False, kernel_initializer='glorot_uniform')(b1) # the layer specialized in activity prediction
+        l2_1 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) # the layer specialized in activity prediction
         b2_1 = BatchNormalization()(l2_1)
         l2_2 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) #the layer specialized in outcome prediction
         b2_2 = BatchNormalization()(l2_2)
@@ -252,12 +253,12 @@ class Manager:
         #                                min_delta=0.0001, cooldown=0, min_lr=0)
 
         early_stopping = EarlyStopping(monitor='val_loss', patience=42)
-        model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+        #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
         lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
 
         #Y_train = tf.squeeze(Y_train, axis=-1)
         #Z_train = tf.squeeze(Z_train, axis=-1)
-        model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=128, verbose=2, callbacks=[early_stopping, model_checkpoint, lr_reducer], validation_split =0.2 )
+        model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=128, verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
         #validation_data=(X_val, [Y_val,Z_val])
         model.save("model/generate_" + self.log_name + ".h5")
 
@@ -301,7 +302,6 @@ class Manager:
     def evaluate_model(self,X_test,Y_test,Z_test):
         model = load_model("model/generate_" + self.log_name + ".h5")
 
-
         prediction = model.predict(X_test, batch_size=128, verbose = 0)
         rounded_act_prediction = np.argmax(prediction[0],axis=-1)
         rounded_out_prediction = np.argmax(prediction[1],axis=-1)
@@ -313,10 +313,11 @@ class Manager:
         cm_plot_labels_act = range(0,self.outsize_act)
         #print(cm_act)
         self.plot_confusion_matrix(cm=cm_act, classes=cm_plot_labels_act, title='Confusion Matrix Next Activity')
+        print(metrics.classification_report(Y_test, rounded_act_prediction, digits=3))
 
         cm_out = confusion_matrix(y_true= Z_test, y_pred=rounded_out_prediction)
         cm_plot_labels_out = range(0,self.outsize_out)
         #print(cm_out)
         self.plot_confusion_matrix(cm=cm_out, classes=cm_plot_labels_out, title='Confusion Matrix Outcome')
-
+        print(metrics.classification_report(Z_test, rounded_out_prediction, digits=3))
     pass

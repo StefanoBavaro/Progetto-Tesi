@@ -11,7 +11,7 @@ manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_na
 manager.gen_internal_csv()
 
 X_train, X_test, Y_train, Y_test, Z_train, Z_test = manager.csv_to_data()
-manager.build_neural_network_model(X_train,Y_train,Z_train)
+#manager.build_neural_network_model(X_train,Y_train,Z_train)
 manager.evaluate_model(X_test,Y_test,Z_test)
 
 
