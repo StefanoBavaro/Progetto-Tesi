@@ -16,7 +16,8 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from keras.layers import Input, LSTM
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, accuracy_score
+from hyperopt import fmin, hp, tpe, Trials, space_eval, STATUS_OK
 
 
 class Manager:
@@ -214,7 +215,7 @@ class Manager:
 
 
 
-    def build_neural_network_model(self,X_train, Y_train, Z_train):
+    def build_neural_network_model(self,X_train, Y_train, Z_train ):
 
 
         Y_train = to_categorical(Y_train)
@@ -229,7 +230,7 @@ class Manager:
         size_act = (unique_events + 1) // 2
 
         input_act = Input(shape=(self.example_size,), dtype='int32', name='input_act')
-        x_act = Embedding(output_dim=size_act, input_dim=unique_events + 1, input_length=self.example_size)(
+        x_act = Embedding(output_dim=size_act, input_dim=unique_events+1, input_length=self.example_size)(
                          input_act)
 
         l1 = LSTM(16, return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
@@ -260,6 +261,7 @@ class Manager:
         #Z_train = tf.squeeze(Z_train, axis=-1)
         model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=128, verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
         #validation_data=(X_val, [Y_val,Z_val])
+
         model.save("model/generate_" + self.log_name + ".h5")
 
 
@@ -303,8 +305,39 @@ class Manager:
         model = load_model("model/generate_" + self.log_name + ".h5")
 
         prediction = model.predict(X_test, batch_size=128, verbose = 0)
-        rounded_act_prediction = np.argmax(prediction[0],axis=-1)
-        rounded_out_prediction = np.argmax(prediction[1],axis=-1)
+        y_pred = prediction[0]
+        z_pred = prediction[1]
+
+        # accuracy = accuracy_score([Y_test,Z_test], prediction)
+        # print(accuracy)
+        # Y_accuracy = accuracy_score(Y_test, y_pred)
+        # Z_accuracy = accuracy_score(Z_test, z_pred)
+        #return {'loss': -accuracy, 'status': STATUS_OK}
+
+        # search_space = hp.randint('n_estimators', 200, 1000)
+        #
+        # space = {'lstmsize': scope.int(hp.loguniform('lstmsize', np.log(10), np.log(150))),
+        #  'dropout': hp.uniform("dropout", 0, 0.5),
+        #  'l1': hp.loguniform("l1", np.log(0.00001), np.log(0.1)),
+        #  'l2': hp.loguniform("l2", np.log(0.00001), np.log(0.1)),
+        #  'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
+        #  'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01)),
+        #  'n_layers': hp.choice('n_layers', [
+        #      {'n_layers': 1},
+        #      {'n_layers': 2,
+        #       'lstmsize22': scope.int(hp.loguniform('lstmsize22', np.log(10), np.log(150)))},
+        #      {'n_layers': 3,
+        #       'lstmsize32': scope.int(hp.loguniform('lstmsize32', np.log(10), np.log(150))),
+        #       'lstmsize33': scope.int(hp.loguniform('lstmsize33', np.log(10), np.log(150)))}
+        #  ])
+        # }
+
+
+
+
+
+        rounded_act_prediction = np.argmax(y_pred,axis=-1)
+        rounded_out_prediction = np.argmax(z_pred,axis=-1)
         # print(prediction)
         # print(rounded_act_prediction)
         # print(rounded_out_prediction)
@@ -320,4 +353,9 @@ class Manager:
         #print(cm_out)
         self.plot_confusion_matrix(cm=cm_out, classes=cm_plot_labels_out, title='Confusion Matrix Outcome')
         print(metrics.classification_report(Z_test, rounded_out_prediction, digits=3))
+
+
+
+
+
     pass
