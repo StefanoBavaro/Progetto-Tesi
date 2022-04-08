@@ -47,7 +47,7 @@ class Manager:
         un'ultima attività contenente l'outcome della traccia.
         """
         print("Processing CSV...")
-        filename = str(Path('../code/data/sorted_csvs/' + self.log_name + ".csv").resolve())
+        filename = str(Path('../Progetto-Tesi/data/sorted_csvs/' + self.log_name + ".csv").resolve())
         data = pd.read_csv(filename)
 
 
@@ -95,7 +95,7 @@ class Manager:
         self.outsize_out = len(data_updated[self.outcome_name].unique())
         print(self.outsize_out)
 
-        filename = str(Path('../code/data/updated_csvs/'+self.log_name+"_updated.csv").resolve())
+        filename = str(Path('../Progetto-Tesi/data/updated_csvs/'+self.log_name+"_updated.csv").resolve())
         data_updated.to_csv(filename)
         #print(data_updated)
         print("Done: updated CSV created")
@@ -107,7 +107,7 @@ class Manager:
         Richiama la funzione di codifica delle tracce e della costruzione delle finestre.
         """
 
-        filename = str(Path('../code/data/updated_csvs/' + self.log_name + "_updated.csv").resolve())
+        filename = str(Path('../Progetto-Tesi/data/updated_csvs/' + self.log_name + "_updated.csv").resolve())
         data = pd.read_csv(filename)
 
         #inserisco per prime nel dizionario le label degli outcome
