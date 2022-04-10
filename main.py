@@ -26,11 +26,11 @@ from hyperopt.pyll.stochastic import sample
 
 
 
-log_name="Production_Sorted"
+log_name="sepsis_cases_1_Sorted2"
 activity_name = "Activity"
 case_name = "Case ID"
-timestamp_name = "Complete Timestamp"
-outcome_name = 'label'
+timestamp_name = "time:timestamp"
+outcome_name = "label"
 example_size = 4
 
 manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name, example_size)
@@ -54,38 +54,19 @@ def objective(params):
 
         n_layers = int(params["n_layers"]["n_layers"])
 
-        #  if model_type == "LSTM":
-        # model.add(CuDNNLSTM(int(params["lstmsize"]),
-        #                        kernel_initializer='glorot_uniform',
-        #                        return_sequences=(n_layers != 1),
-        #                        kernel_regularizer=regularizers.l1_l2(params["l1"],params["l2"]),
-        #                        recurrent_regularizer=regularizers.l1_l2(params["l1"],params["l2"]),
-        #                        input_shape=(maxlen, num_chars)))
-        # model.add(Dropout(params["dropout"]))
-        #
-        #
-        # for i in range(2, n_layers+1):
-        #     return_sequences = (i != n_layers)
-        #     model.add(CuDNNLSTM(int(params["n_layers"]["lstmsize%s%s" % (n_layers, i)]),
-        #                    kernel_initializer='glorot_uniform',
-        #                    return_sequences=return_sequences,
-        #                    kernel_regularizer=regularizers.l1_l2(params["l1"],params["l2"]),
-        #                    recurrent_regularizer=regularizers.l1_l2(params["l1"],params["l2"])))
-        #     model.add(Dropout(params["dropout"]))
-
-        l1 = LSTM(params["shared_lstm_size"], return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
+        l1 = LSTM(params["shared_lstm_size"], return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(x_act)
         l1 = BatchNormalization()(l1)
 
-        l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform')(l1)
+        l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
         l_a = BatchNormalization()(l_a)
-        l_o = LSTM(params["lstmO_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform')(l1)
+        l_o = LSTM(params["lstmO_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
         l_o = BatchNormalization()(l_o)
 
         for i in range(2,n_layers+1):
-            l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform')(l_a)
+            l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
             l_a = BatchNormalization()(l_a)
 
-            l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform')(l_o)
+            l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
             l_o = BatchNormalization()(l_o)
 
 
@@ -104,14 +85,14 @@ def objective(params):
 
         opt = Adam(lr=params["learning_rate"])
         model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
-        # early_stopping = EarlyStopping(monitor='val_loss',
-        #                                patience=20)
-        # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
-        #                                min_delta=0.0001, cooldown=0, min_lr=0)
+        early_stopping = EarlyStopping(monitor='val_loss',
+                                       patience=20)
+        lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+                                       min_delta=0.0001, cooldown=0, min_lr=0)
 
-        early_stopping = EarlyStopping(monitor='val_loss', patience=42)
-        #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
-        lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
+        # early_stopping = EarlyStopping(monitor='val_loss', patience=42)
+        # #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+        # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
 
         history = model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
         scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
@@ -120,19 +101,7 @@ def objective(params):
         if best_score > score:
                 best_score = score
                 best_model = model
-        # prediction = model.predict(X_test, batch_size=128, verbose = 0)
-        # y_pred = prediction[0]
-        # z_pred = prediction[1]
-        # accuracy_act = accuracy_score(Y_test, np.argmax(y_pred,axis=-1))
-        # accuracy_out = accuracy_score(Z_test, np.argmax(z_pred,axis=-1))
 
-        #
-        #
-        # accuracy_score(testing['crime'], predicted2.argmax(axis=1))
-        #
-        # rounded_act_prediction = np.argmax(y_pred,axis=-1)
-        # rounded_out_prediction = np.argmax(z_pred,axis=-1)
-        #return {'loss_act': -accuracy_act, 'loss_out': -accuracy_out,'status': STATUS_OK}
         return {'loss': score, 'status': STATUS_OK}
         #model.save("model/generate_" + self.log_name + ".h5")
 
@@ -152,27 +121,27 @@ search_space = { #'output_dim_embedding':...
                     'lstmA_size_3_3': scope.int(hp.loguniform('lstmA_size_3_3', np.log(10), np.log(150))),
                     'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))}
                 ]),
-                #'dropout': hp.uniform("dropout", 0, 0.5),
+                'dropout': hp.uniform("dropout", 0, 0.5),
                 'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                 'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                 }
 algorithm = tpe.suggest
-
 best_score = np.inf
 best_model = None
-trials = Trials()
-
 
 best_params = fmin(
   fn=objective,
   space=search_space,
   algo=algorithm,
-  max_evals=200,
-  trials=trials)
+  max_evals=5,
+  trials=Trials())
 
+best_params = space_eval(search_space,best_params)
 print(best_params)
+best_model.save("model/generate_" + log_name + ".h5")
 
-#manager.objective(X_train, X_test, Y_train, Y_test, Z_train, Z_test)
+print('Evaluating final model...')
+manager.evaluate_model(X_test,Y_test,Z_test)
 
 
 

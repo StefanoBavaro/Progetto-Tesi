@@ -308,34 +308,6 @@ class Manager:
         y_pred = prediction[0]
         z_pred = prediction[1]
 
-        # accuracy = accuracy_score([Y_test,Z_test], prediction)
-        # print(accuracy)
-        # Y_accuracy = accuracy_score(Y_test, y_pred)
-        # Z_accuracy = accuracy_score(Z_test, z_pred)
-        #return {'loss': -accuracy, 'status': STATUS_OK}
-
-        # search_space = hp.randint('n_estimators', 200, 1000)
-        #
-        # space = {'lstmsize': scope.int(hp.loguniform('lstmsize', np.log(10), np.log(150))),
-        #  'dropout': hp.uniform("dropout", 0, 0.5),
-        #  'l1': hp.loguniform("l1", np.log(0.00001), np.log(0.1)),
-        #  'l2': hp.loguniform("l2", np.log(0.00001), np.log(0.1)),
-        #  'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
-        #  'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01)),
-        #  'n_layers': hp.choice('n_layers', [
-        #      {'n_layers': 1},
-        #      {'n_layers': 2,
-        #       'lstmsize22': scope.int(hp.loguniform('lstmsize22', np.log(10), np.log(150)))},
-        #      {'n_layers': 3,
-        #       'lstmsize32': scope.int(hp.loguniform('lstmsize32', np.log(10), np.log(150))),
-        #       'lstmsize33': scope.int(hp.loguniform('lstmsize33', np.log(10), np.log(150)))}
-        #  ])
-        # }
-
-
-
-
-
         rounded_act_prediction = np.argmax(y_pred,axis=-1)
         rounded_out_prediction = np.argmax(z_pred,axis=-1)
         # print(prediction)
