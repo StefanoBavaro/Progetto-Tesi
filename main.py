@@ -1,305 +1,144 @@
-{
-  "cells": [
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "_ey8HjE0GVZA",
-        "outputId": "21257270-e3d7-4121-fc2a-3654fb1b5637"
-      },
-      "outputs": [
-        {
-          "name": "stdout",
-          "output_type": "stream",
-          "text": [
-            "Mounted at /content/drive\n"
-          ]
-        }
-      ],
-      "source": [
-        "from google.colab import drive\n",
-        "drive.mount('/content/drive')"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 3,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "dI_O6cKGIQmj",
-        "outputId": "2ccc4b67-477d-419a-8fcd-0810fe13f009"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "fatal: destination path 'Progetto-Tesi' already exists and is not an empty directory.\n"
-          ]
-        }
-      ],
-      "source": [
-        "!git clone https://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@github.com/StefanoBavaro/Progetto-Tesi.git"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": 4,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "J6M4XlTQIdug",
-        "outputId": "3f7babd3-d8c6-4878-ada1-35d0302c515f"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "/content/Progetto-Tesi\n"
-          ]
-        }
-      ],
-      "source": [
-        "%cd Progetto-Tesi/"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "I7MZE5rhJLRG",
-        "outputId": "6fece85f-4e97-434e-9914-22b26d6eded8"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "\u001b[0m\u001b[01;34m.\u001b[0m/  \u001b[01;34m..\u001b[0m/  \u001b[01;34m.config\u001b[0m/  \u001b[01;34mProgetto-Tesi\u001b[0m/  \u001b[01;34msample_data\u001b[0m/\n"
-          ]
-        }
-      ],
-      "source": [
-        "%ls -a"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "source": [
-        ""
-      ],
-      "metadata": {
-        "id": "o_IOy_A89jzu"
-      },
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "sXnDmXR7RDr2",
-        "outputId": "f60c0a07-487a-4f49-9acc-e56b554924c9"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Found GPU at: /device:GPU:0\n"
-          ]
-        }
-      ],
-      "source": [
-        "%tensorflow_version 2.x\n",
-        "import tensorflow as tf\n",
-        "device_name = tf.test.gpu_device_name()\n",
-        "if device_name != '/device:GPU:0':\n",
-        "  raise SystemError('GPU device not found')\n",
-        "print('Found GPU at: {}'.format(device_name))"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "source": [
-        ""
-      ],
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "aycNp9Rzdm9B",
-        "outputId": "693e4a56-72aa-416f-91cc-94d8d61ea258"
-      },
-      "execution_count": 10,
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "\n",
-            "*** Please tell me who you are.\n",
-            "\n",
-            "Run\n",
-            "\n",
-            "  git config --global user.email \"you@example.com\"\n",
-            "  git config --global user.name \"Your Name\"\n",
-            "\n",
-            "to set your account's default identity.\n",
-            "Omit --global to set the identity only in this repository.\n",
-            "\n",
-            "fatal: unable to auto-detect email address (got 'root@18783349822b.(none)')\n"
-          ]
-        }
-      ]
-    },
-    {
-      "cell_type": "code",
-      "execution_count": null,
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "xozknvD4J6PK",
-        "outputId": "5dad2b85-4c25-48df-aad0-d1d5e95d484f"
-      },
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Processing CSV...\n",
-            "NUMERO TRACCE = 782\n",
-            "NUMERO EVENTI = 13120\n",
-            "NUMERO EVENTI DOPO UPDATE= 13902\n",
-            "17\n",
-            "2\n",
-            "Done: updated CSV created\n",
-            "  0% 0/20 [00:00<?, ?it/s, best loss: ?]2022-04-11 18:23:20.176443: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:39] Overriding allow_growth setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.\n",
-            "Model: \"model\"\n",
-            "\n",
-            "__________________________________________________________________________________________________\n",
-            "\n",
-            " Layer (type)                   Output Shape         Param #     Connected to                     \n",
-            "\n",
-            "==================================================================================================\n",
-            "\n",
-            " input_act (InputLayer)         [(None, 4)]          0           []                               \n",
-            "\n",
-            " embedding (Embedding)          (None, 4, 23)        414         ['input_act[0][0]']              \n",
-            "\n",
-            " lstm (LSTM)                    (None, 4, 45)        12420       ['embedding[0][0]']              \n",
-            "\n",
-            " batch_normalization (BatchNorm  (None, 4, 45)       180         ['lstm[0][0]']                   \n",
-            "\n",
-            " alization)                                                                                       \n",
-            "\n",
-            " lstm_1 (LSTM)                  (None, 120)          79680       ['batch_normalization[0][0]']    \n",
-            "\n",
-            " lstm_2 (LSTM)                  (None, 10)           2240        ['batch_normalization[0][0]']    \n",
-            "\n",
-            " batch_normalization_1 (BatchNo  (None, 120)         480         ['lstm_1[0][0]']                 \n",
-            "\n",
-            " rmalization)                                                                                     \n",
-            "\n",
-            " batch_normalization_2 (BatchNo  (None, 10)          40          ['lstm_2[0][0]']                 \n",
-            "\n",
-            " rmalization)                                                                                     \n",
-            "\n",
-            " act_output (Dense)             (None, 17)           2057        ['batch_normalization_1[0][0]']  \n",
-            "\n",
-            " outcome_output (Dense)         (None, 2)            22          ['batch_normalization_2[0][0]']  \n",
-            "\n",
-            "==================================================================================================\n",
-            "\n",
-            "Total params: 97,533\n",
-            "\n",
-            "Trainable params: 97,183\n",
-            "\n",
-            "Non-trainable params: 350\n",
-            "\n",
-            "__________________________________________________________________________________________________\n",
-            "\n",
-            "None\n",
-            "  0% 0/20 [00:04<?, ?it/s, best loss: ?]/usr/local/lib/python3.7/dist-packages/keras/optimizer_v2/adam.py:105: UserWarning: The `lr` argument is deprecated, use `learning_rate` instead.\n",
-            "  super(Adam, self).__init__(name, **kwargs)\n",
-            "\n",
-            "Epoch 1/500\n",
-            "\n",
-            "1050/1050 - 29s - loss: 1.9560 - act_output_loss: 1.4836 - outcome_output_loss: 0.4724 - act_output_accuracy: 0.5220 - outcome_output_accuracy: 0.8235 - val_loss: 1.7347 - val_act_output_loss: 1.2903 - val_outcome_output_loss: 0.4445 - val_act_output_accuracy: 0.5514 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 29s/epoch - 28ms/step\n",
-            "\n",
-            "Epoch 2/500\n",
-            "\n",
-            "1050/1050 - 16s - loss: 1.6707 - act_output_loss: 1.2207 - outcome_output_loss: 0.4500 - act_output_accuracy: 0.5787 - outcome_output_accuracy: 0.8371 - val_loss: 1.5739 - val_act_output_loss: 1.1367 - val_outcome_output_loss: 0.4372 - val_act_output_accuracy: 0.6176 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 16s/epoch - 16ms/step\n",
-            "\n",
-            "Epoch 3/500\n",
-            "\n",
-            "1050/1050 - 17s - loss: 1.5994 - act_output_loss: 1.1520 - outcome_output_loss: 0.4474 - act_output_accuracy: 0.5869 - outcome_output_accuracy: 0.8371 - val_loss: 1.4981 - val_act_output_loss: 1.0622 - val_outcome_output_loss: 0.4358 - val_act_output_accuracy: 0.6110 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 17s/epoch - 16ms/step\n",
-            "\n",
-            "Epoch 4/500\n",
-            "\n",
-            "1050/1050 - 16s - loss: 1.5523 - act_output_loss: 1.1073 - outcome_output_loss: 0.4450 - act_output_accuracy: 0.6027 - outcome_output_accuracy: 0.8369 - val_loss: 1.5035 - val_act_output_loss: 1.0683 - val_outcome_output_loss: 0.4352 - val_act_output_accuracy: 0.6300 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 16s/epoch - 16ms/step\n",
-            "\n",
-            "Epoch 5/500\n",
-            "\n",
-            "1050/1050 - 16s - loss: 1.5293 - act_output_loss: 1.0854 - outcome_output_loss: 0.4438 - act_output_accuracy: 0.6065 - outcome_output_accuracy: 0.8371 - val_loss: 1.5464 - val_act_output_loss: 1.1116 - val_outcome_output_loss: 0.4348 - val_act_output_accuracy: 0.6086 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 16s/epoch - 15ms/step\n",
-            "\n",
-            "Epoch 6/500\n",
-            "\n",
-            "1050/1050 - 17s - loss: 1.5030 - act_output_loss: 1.0594 - outcome_output_loss: 0.4435 - act_output_accuracy: 0.6140 - outcome_output_accuracy: 0.8371 - val_loss: 1.5060 - val_act_output_loss: 1.0717 - val_outcome_output_loss: 0.4343 - val_act_output_accuracy: 0.6090 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 17s/epoch - 17ms/step\n",
-            "\n",
-            "Epoch 7/500\n",
-            "\n",
-            "1050/1050 - 16s - loss: 1.4894 - act_output_loss: 1.0472 - outcome_output_loss: 0.4422 - act_output_accuracy: 0.6127 - outcome_output_accuracy: 0.8371 - val_loss: 1.4981 - val_act_output_loss: 1.0625 - val_outcome_output_loss: 0.4356 - val_act_output_accuracy: 0.6086 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 16s/epoch - 16ms/step\n",
-            "\n",
-            "Epoch 8/500\n",
-            "\n",
-            "1050/1050 - 16s - loss: 1.4904 - act_output_loss: 1.0483 - outcome_output_loss: 0.4422 - act_output_accuracy: 0.6129 - outcome_output_accuracy: 0.8371 - val_loss: 1.4551 - val_act_output_loss: 1.0219 - val_outcome_output_loss: 0.4332 - val_act_output_accuracy: 0.6229 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 16s/epoch - 16ms/step\n",
-            "\n",
-            "Epoch 9/500\n",
-            "\n",
-            "1050/1050 - 16s - loss: 1.4754 - act_output_loss: 1.0338 - outcome_output_loss: 0.4416 - act_output_accuracy: 0.6168 - outcome_output_accuracy: 0.8371 - val_loss: 1.4810 - val_act_output_loss: 1.0461 - val_outcome_output_loss: 0.4349 - val_act_output_accuracy: 0.6176 - val_outcome_output_accuracy: 0.8414 - lr: 0.0016 - 16s/epoch - 16ms/step\n",
-            "\n",
-            "Epoch 10/500\n",
-            "\n",
-            "  0% 0/20 [02:46<?, ?it/s, best loss: ?]"
-          ]
-        }
-      ],
-      "source": [
-        "!python main.py"
-      ]
-    }
-  ],
-  "metadata": {
-    "colab": {
-      "collapsed_sections": [],
-      "name": "Untitled0.ipynb",
-      "provenance": [],
-      "authorship_tag": "ABX9TyP9cNYIpWXAjp6fIodgatCD"
-    },
-    "kernelspec": {
-      "display_name": "Python 3",
-      "name": "python3"
-    },
-    "language_info": {
-      "name": "python"
-    },
-    "accelerator": "GPU"
-  },
-  "nbformat": 4,
-  "nbformat_minor": 0
-}
+from manager import Manager
+from hyperopt import fmin, hp, tpe, Trials, space_eval, STATUS_OK
+
+import numpy as np
+import pandas as pd
+import datetime
+from pathlib import Path
+import itertools
+
+from sklearn import preprocessing
+from sklearn import metrics
+
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from keras.layers import Embedding, Dense, BatchNormalization, Reshape, CuDNNLSTM
+from keras.models import Model, load_model
+from tensorflow.keras.optimizers import Adam
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
+from keras.layers import Input, LSTM
+from tensorflow.keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, accuracy_score
+from hyperopt import fmin, hp, tpe, Trials, space_eval, STATUS_OK
+from hyperopt.pyll.base import scope
+from hyperopt.pyll.stochastic import sample
+
+
+
+log_name="sepsis_cases_1_Sorted2"
+activity_name = "Activity"
+case_name = "Case ID"
+timestamp_name = "time:timestamp"
+outcome_name = "label"
+example_size = 4
+
+manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name, example_size)
+manager.gen_internal_csv()
+
+X_train, X_test, Y_trainBefore, Y_test, Z_trainBefore, Z_test = manager.csv_to_data()
+# manager.build_neural_network_model(X_train,Y_train,Z_train)
+# manager.evaluate_model(X_test,Y_test,Z_test)
+
+
+def objective(params):
+        Y_train = to_categorical(Y_trainBefore)
+        Z_train = to_categorical(Z_trainBefore)
+
+        unique_events = len(manager.act_dictionary) #numero di diversi eventi/attività nel dataset
+        size_act = (unique_events + 1) // 2
+
+        input_act = Input(shape=(manager.example_size,), dtype='int32', name='input_act')
+        x_act = Embedding(output_dim= size_act, input_dim=unique_events + 1, input_length=manager.example_size)(
+                         input_act)
+
+        n_layers = int(params["n_layers"]["n_layers"])
+
+        l1 = LSTM(params["shared_lstm_size"], return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(x_act)
+        l1 = BatchNormalization()(l1)
+
+        l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+        l_a = BatchNormalization()(l_a)
+        l_o = LSTM(params["lstmO_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+        l_o = BatchNormalization()(l_o)
+
+        for i in range(2,n_layers+1):
+            l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
+            l_a = BatchNormalization()(l_a)
+
+            l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
+            l_o = BatchNormalization()(l_o)
+
+
+        # l1 = LSTM(params["lstm1_size"], return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
+        # b1 = BatchNormalization()(l1)
+        # l2_1 = LSTM(params["lstm2_size"], return_sequences=False, kernel_initializer='glorot_uniform')(b1) # the layer specialized in activity prediction
+        # b2_1 = BatchNormalization()(l2_1)
+        # l2_2 = LSTM(params["lstm3_size"], return_sequences=False, kernel_initializer='glorot_uniform')(b1) #the layer specialized in outcome prediction
+        # b2_2 = BatchNormalization()(l2_2)
+
+        output_l = Dense(manager.outsize_act, activation='softmax', name='act_output')(l_a)
+        output_o = Dense(manager.outsize_out, activation='softmax', name='outcome_output')(l_o)
+
+        model = Model(inputs=input_act, outputs=[output_l, output_o])
+        print(model.summary())
+
+        opt = Adam(lr=params["learning_rate"])
+        model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
+        early_stopping = EarlyStopping(monitor='val_loss',
+                                       patience=20)
+        lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+                                       min_delta=0.0001, cooldown=0, min_lr=0)
+
+        # early_stopping = EarlyStopping(monitor='val_loss', patience=42)
+        # #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+        # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
+
+        history = model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
+        score = min(scores)
+        global best_score, best_model
+        if best_score > score:
+                best_score = score
+                best_model = model
+
+        return {'loss': score, 'status': STATUS_OK}
+        #model.save("model/generate_" + self.log_name + ".h5")
+
+search_space = { #'output_dim_embedding':...
+                'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
+                'lstmA_size_1':  scope.int(hp.loguniform('lstmA_size_1', np.log(10), np.log(150))),
+                'lstmO_size_1':  scope.int(hp.loguniform('lstmO_size_1', np.log(10), np.log(150))),
+                'n_layers': hp.choice('n_layers', [
+                {'n_layers': 1},
+                {'n_layers': 2,
+                    'lstmA_size_2_2': scope.int(hp.loguniform('lstmA_size_2_2', np.log(10), np.log(150))),
+                    'lstmO_size_2_2': scope.int(hp.loguniform('lstmO_size_2_2', np.log(10), np.log(150))),
+                 },
+                {'n_layers': 3,
+                    'lstmA_size_2_3': scope.int(hp.loguniform('lstmA_size_2_3', np.log(10), np.log(150))),
+                    'lstmO_size_2_3': scope.int(hp.loguniform('lstmO_size_2_3', np.log(10), np.log(150))),
+                    'lstmA_size_3_3': scope.int(hp.loguniform('lstmA_size_3_3', np.log(10), np.log(150))),
+                    'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))}
+                ]),
+                'dropout': hp.uniform("dropout", 0, 0.5),
+                'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
+                'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
+                }
+algorithm = tpe.suggest
+best_score = np.inf
+best_model = None
+
+best_params = fmin(
+  fn=objective,
+  space=search_space,
+  algo=algorithm,
+  max_evals=5,
+  trials=Trials())
+
+best_params = space_eval(search_space,best_params)
+print(best_params)
+best_model.save("model/generate_" + log_name + ".h5")
+
+print('Evaluating final model...')
+manager.evaluate_model(X_test,Y_test,Z_test)
