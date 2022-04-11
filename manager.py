@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas as pd
 import datetime
@@ -191,9 +192,7 @@ class Manager:
         self.y_training = np.asarray(self.y_training)
         self.z_training = np.asarray(self.z_training)
 
-        le = preprocessing.LabelEncoder()
-        self.y_training = le.fit_transform(self.y_training)
-        self.z_training = le.fit_transform(self.z_training)
+
 
         # print("After first transformation:")
         # print(self.x_training)
@@ -211,12 +210,19 @@ class Manager:
         X_train, X_test, Y_train, Y_test, Z_train, Z_test = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
                                                           random_state=42, shuffle=True)
 
+        leA = preprocessing.LabelEncoder()
+        Y_train = leA.fit_transform(Y_train)
+        Y_test = leA.transform(Y_test)
+
+        leO = preprocessing.LabelEncoder()
+        Z_train = leO.fit_transform(Z_train)
+        Z_test = leO.transform(Z_test)
+
         return X_train, X_test, Y_train, Y_test, Z_train, Z_test
 
 
 
     def build_neural_network_model(self,X_train, Y_train, Z_train ):
-
 
         Y_train = to_categorical(Y_train)
         Z_train = to_categorical(Z_train) #trasformazione in vettori per la rete
