@@ -305,7 +305,7 @@ class Manager:
         plt.tight_layout()
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
-        plt.show()
+        #plt.show()
 
     def evaluate_model(self,X_test,Y_test,Z_test):
         model = load_model("model/generate_" + self.log_name + ".h5")
@@ -324,13 +324,17 @@ class Manager:
         cm_plot_labels_act = range(0,self.outsize_act)
         #print(cm_act)
         self.plot_confusion_matrix(cm=cm_act, classes=cm_plot_labels_act, title='Confusion Matrix Next Activity')
-        print(metrics.classification_report(Y_test, rounded_act_prediction, digits=3))
+        reportNA=metrics.classification_report(Y_test, rounded_act_prediction, digits=3)
+        print(reportNA)
 
         cm_out = confusion_matrix(y_true= Z_test, y_pred=rounded_out_prediction)
         cm_plot_labels_out = range(0,self.outsize_out)
         #print(cm_out)
         self.plot_confusion_matrix(cm=cm_out, classes=cm_plot_labels_out, title='Confusion Matrix Outcome')
-        print(metrics.classification_report(Z_test, rounded_out_prediction, digits=3))
+        reportO = metrics.classification_report(Z_test, rounded_out_prediction, digits=3)
+        print(reportO)
+
+        return reportNA,reportO
 
 
 

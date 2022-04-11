@@ -105,7 +105,7 @@ def objective(params):
         return {'loss': score, 'status': STATUS_OK}
         #model.save("model/generate_" + self.log_name + ".h5")
 
-search_space = { 'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
+search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                 'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
                 'lstmA_size_1':  scope.int(hp.loguniform('lstmA_size_1', np.log(10), np.log(150))),
                 'lstmO_size_1':  scope.int(hp.loguniform('lstmO_size_1', np.log(10), np.log(150))),
@@ -129,19 +129,69 @@ algorithm = tpe.suggest
 best_score = np.inf
 best_model = None
 
+outfile = open('../Progetto-Tesi/data/log_files/' + log_name + '_opt.log', 'w')
+
+trials = Trials()
 best_params = fmin(
   fn=objective,
   space=search_space,
   algo=algorithm,
   max_evals=20,
-  trials=Trials())
+  trials=trials)
 
 best_params = space_eval(search_space,best_params)
 print(best_params)
+
+outfile.write("\nHyperopt trials")
+outfile.write("\ntid,loss,output_dim_embedding,shared_lstm_size,lstmA_size_1,lstmO_size_1,n_layers,...,batch_size,learning_rate")
+for trial in trials.trials:
+    n_layers = trial['misc']['vals']['n_layers'][0]
+    if(n_layers==1):
+        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f" % (trial['tid'],
+                                                trial['result']['loss'],
+                                                trial['misc']['vals']['output_dim_embedding'][0],
+                                                trial['misc']['vals']['shared_lstm_size'][0],
+                                                trial['misc']['vals']['lstmA_size_1'][0],
+                                                trial['misc']['vals']['lstmO_size_1'][0],
+                                                trial['misc']['vals']['n_layers'][0],
+                                                trial['misc']['vals']['dropout'][0],
+                                                trial['misc']['vals']['batch_size'][0],
+                                                trial['misc']['vals']['learning_rate'][0]
+                                                ))
+    elif(n_layers==2):
+        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f" % (trial['tid'],
+                                                trial['result']['loss'],
+                                                trial['misc']['vals']['output_dim_embedding'][0],
+                                                trial['misc']['vals']['shared_lstm_size'][0],
+                                                trial['misc']['vals']['lstmA_size_1'][0],
+                                                trial['misc']['vals']['lstmO_size_1'][0],
+                                                trial['misc']['vals']['n_layers'][0],
+                                                trial['misc']['vals']['dropout'][0],
+                                                trial['misc']['vals']['batch_size'][0],
+                                                trial['misc']['vals']['learning_rate'][0]
+                                                ))
+    elif(n_layers==3):
+        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f" % (trial['tid'],
+                                                trial['result']['loss'],
+                                                trial['misc']['vals']['output_dim_embedding'][0],
+                                                trial['misc']['vals']['shared_lstm_size'][0],
+                                                trial['misc']['vals']['lstmA_size_1'][0],
+                                                trial['misc']['vals']['lstmO_size_1'][0],
+                                                trial['misc']['vals']['n_layers'][0],
+                                                trial['misc']['vals']['dropout'][0],
+                                                trial['misc']['vals']['batch_size'][0],
+                                                trial['misc']['vals']['learning_rate'][0]
+                                                ))
+
+outfile.write("\n\nBest parameters:")
+print(best_params, file=outfile)
+
 best_model.save("model/generate_" + log_name + ".h5")
 
 print('Evaluating final model...')
-manager.evaluate_model(X_test,Y_test,Z_test)
+reportNA,reportO = manager.evaluate_model(X_test,Y_test,Z_test)
+print(reportNA, file=outfile)
+print(reportO, file=outfile)
 
 
 

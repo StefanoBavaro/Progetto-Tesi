@@ -1,0 +1,40 @@
+
+Hyperopt trials
+tid,loss,output_dim_embedding,shared_lstm_size,lstmA_size_1,lstmO_size_1,n_layers,...,batch_size,learning_rate
+0,1.543650,99, 94, 140, 78, 1, 0.241903,4,0.004063
+2,3.203291,56, 89, 32, 16, 1, 0.384984,5,0.000046
+
+Best parameters:{'batch_size': 4, 'dropout': 0.24190293294166382, 'learning_rate': 0.00406262344721428, 'lstmA_size_1': 140, 'lstmO_size_1': 78, 'n_layers': {'lstmA_size_2_2': 100, 'lstmO_size_2_2': 126, 'n_layers': 2}, 'output_dim_embedding': 99, 'shared_lstm_size': 94}
+              precision    recall  f1-score   support
+
+           0      0.000     0.000     0.000        25
+           1      0.853     0.987     0.915       153
+           2      0.500     0.214     0.300        14
+           3      0.854     0.985     0.915       136
+           4      0.835     0.969     0.897       162
+           5      0.408     0.355     0.380       256
+           6      0.512     0.571     0.540       616
+           7      0.550     0.644     0.593       616
+           8      0.592     0.395     0.474       114
+           9      0.679     0.745     0.711       145
+          10      0.565     0.524     0.544       225
+          11      0.200     0.034     0.058       118
+          12      0.000     0.000     0.000        23
+          13      0.000     0.000     0.000        14
+          14      0.000     0.000     0.000         1
+          15      0.000     0.000     0.000         5
+          16      0.000     0.000     0.000         1
+
+    accuracy                          0.595      2624
+   macro avg      0.385     0.378     0.372      2624
+weighted avg      0.558     0.595     0.570      2624
+
+              precision    recall  f1-score   support
+
+           0      0.000     0.000     0.000       392
+           1      0.851     1.000     0.919      2232
+
+    accuracy                          0.851      2624
+   macro avg      0.425     0.500     0.460      2624
+weighted avg      0.724     0.851     0.782      2624
+
