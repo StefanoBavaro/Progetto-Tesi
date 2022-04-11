@@ -49,7 +49,7 @@ def objective(params):
         size_act = (unique_events + 1) // 2
 
         input_act = Input(shape=(manager.example_size,), dtype='int32', name='input_act')
-        x_act = Embedding(output_dim= size_act, input_dim=unique_events + 1, input_length=manager.example_size)(
+        x_act = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=manager.example_size)(
                          input_act)
 
         n_layers = int(params["n_layers"]["n_layers"])
@@ -105,7 +105,7 @@ def objective(params):
         return {'loss': score, 'status': STATUS_OK}
         #model.save("model/generate_" + self.log_name + ".h5")
 
-search_space = { #'output_dim_embedding':...
+search_space = { 'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                 'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
                 'lstmA_size_1':  scope.int(hp.loguniform('lstmA_size_1', np.log(10), np.log(150))),
                 'lstmO_size_1':  scope.int(hp.loguniform('lstmO_size_1', np.log(10), np.log(150))),
@@ -133,7 +133,7 @@ best_params = fmin(
   fn=objective,
   space=search_space,
   algo=algorithm,
-  max_evals=5,
+  max_evals=20,
   trials=Trials())
 
 best_params = space_eval(search_space,best_params)
@@ -142,3 +142,6 @@ best_model.save("model/generate_" + log_name + ".h5")
 
 print('Evaluating final model...')
 manager.evaluate_model(X_test,Y_test,Z_test)
+
+
+
