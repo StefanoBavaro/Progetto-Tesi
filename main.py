@@ -26,10 +26,10 @@ from hyperopt.pyll.stochastic import sample
 
 
 
-log_name="sepsis_cases_1_Sorted2"
+log_name="Production_Sorted"
 activity_name = "Activity"
 case_name = "Case ID"
-timestamp_name = "time:timestamp"
+timestamp_name = "Complete Timestamp"
 outcome_name = "label"
 example_size = 4
 
