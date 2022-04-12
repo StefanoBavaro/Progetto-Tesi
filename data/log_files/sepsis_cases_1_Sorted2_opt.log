@@ -14,6 +14,8 @@ tid,loss,output_dim_embedding,shared_lstm_size,lstmA_size_1,lstmO_size_1,n_layer
 18,1.422478,29, 14, 49, 63, 2, 0.084137,5,0.007721
 19,1.449779,26, 45, 96, 15, 2, 0.066819,3,0.000016
 
+METRICS FOR NEXT ACTIVITY PREDICTION
+
 Best parameters:{'batch_size': 5, 'dropout': 0.4690906040453278, 'learning_rate': 0.001529303189613641, 'lstmA_size_1': 30, 'lstmO_size_1': 13, 'n_layers': {'lstmA_size_2_2': 17, 'lstmO_size_2_2': 68, 'n_layers': 2}, 'output_dim_embedding': 114, 'shared_lstm_size': 25}
               precision    recall  f1-score   support
 
@@ -39,6 +41,8 @@ Best parameters:{'batch_size': 5, 'dropout': 0.4690906040453278, 'learning_rate'
    macro avg      0.450     0.450     0.440      2624
 weighted avg      0.627     0.628     0.617      2624
 
+
+METRICS FOR OUTCOME PREDICTION
               precision    recall  f1-score   support
 
            0      0.000     0.000     0.000       392
