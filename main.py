@@ -42,6 +42,7 @@ manager.csv_to_data()
 # manager.build_neural_network_model(X_train,Y_train,Z_train)
 # manager.evaluate_model(X_test,Y_test,Z_test)
 
+
 search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                 'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
                 'lstmA_size_1':  scope.int(hp.loguniform('lstmA_size_1', np.log(10), np.log(150))),

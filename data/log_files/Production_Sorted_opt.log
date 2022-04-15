@@ -1,10 +1,14 @@
-
+!!!!NOT UPDATED METRICS!!!
 Hyperopt trials
 tid,loss,output_dim_embedding,shared_lstm_size,lstmA_size_1,lstmO_size_1,n_layers,...,batch_size,learning_rate
 0,1.511133,35, 89, 100, 19, 2, 0.411456,5,0.008680,0.340036
 1,2.423985,68, 88, 44, 11, 2, 0.201644,3,0.000467,0.802338
 
+
 Best parameters:{'batch_size': 5, 'dropout': 0.4114555392843015, 'gamma': 0.3400355756388639, 'learning_rate': 0.00867952257098986, 'lstmA_size_1': 100, 'lstmO_size_1': 19, 'n_layers': {'lstmA_size_2_3': 92, 'lstmA_size_3_3': 97, 'lstmO_size_2_3': 12, 'lstmO_size_3_3': 15, 'n_layers': 3}, 'output_dim_embedding': 35, 'shared_lstm_size': 89, 'win_size': 16}
+
+METRICS FOR NEXT ACTIVITY PREDICTION
+
               precision    recall  f1-score   support
 
            0      0.000     0.000     0.000        30
@@ -30,6 +34,7 @@ Best parameters:{'batch_size': 5, 'dropout': 0.4114555392843015, 'gamma': 0.3400
    macro avg      0.011     0.061     0.013       286
 weighted avg      0.018     0.066     0.019       286
 
+METRICS FOR OUTCOME PREDICTION
               precision    recall  f1-score   support
 
            0      0.769     0.385     0.513       182

@@ -1,4 +1,5 @@
 
+
 import numpy as np
 import pandas as pd
 import datetime
@@ -156,10 +157,6 @@ class Manager:
 
 
         self.traces_train, self.traces_test = train_test_split(traces, test_size=0.2, random_state=42, shuffle=False)
-
-        #return traces_train, traces_test
-        #print(self.traces.size)
-        #print(self.traces)
 
 
     def build_windows(self,traces,win_size):
@@ -477,3 +474,4 @@ class Manager:
 
 
     pass
+
