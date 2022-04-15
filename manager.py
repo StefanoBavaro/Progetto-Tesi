@@ -23,7 +23,7 @@ from hyperopt import fmin, hp, tpe, Trials, space_eval, STATUS_OK
 
 class Manager:
 
-    def __init__(self, log_name, act_name, case_name, ts_name, out_name, ex_size):
+    def __init__(self, log_name, act_name, case_name, ts_name, out_name):
         self.log_name = log_name
         self.timestamp_name = ts_name
         self.case_name = case_name
@@ -32,15 +32,22 @@ class Manager:
 
         self.act_dictionary = {}
         self.traces = [[]]
-        self.example_size = ex_size
+        self.traces_train = []
+        self.traces_test = []
+        #self.example_size = ex_size
 
         self.x_training=[]
         self.y_training=[]
         self.z_training=[]
 
+        self.best_score = np.inf
+        self.best_model = None
+
         self.outsize_act=0
         self.outsize_out=0
 
+        self.leA= preprocessing.LabelEncoder()
+        self.leO= preprocessing.LabelEncoder()
 
     def gen_internal_csv(self):
         """
@@ -60,8 +67,6 @@ class Manager:
         print("NUMERO TRACCE = " + str(num_cases))
         num_events = data_updated.shape[0]
         print("NUMERO EVENTI = " + str(num_events))
-
-
 
         #print(data2.shape[0])
         idx=0
@@ -125,14 +130,14 @@ class Manager:
 
         self.getTraces(data)
         #self.build_training_test_sets()
-        return self.build_training_test_sets()
+        #return self.build_training_test_sets()
 
     def getTraces(self,data):
         """
         Codifica ogni traccia in sequenze di interi (ovvero le codifiche di ogni attività)
         """
-        self.traces = np.empty((len(data[self.case_name].unique()),), dtype=object)
-        self.traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
+        traces = np.empty((len(data[self.case_name].unique()),), dtype=object)
+        traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
         outcomes = range(1, len(data[self.outcome_name].unique())+1)
         #print(outcomes)
 
@@ -140,168 +145,262 @@ class Manager:
         for i, event in data.iterrows():
             activity_coded = self.act_dictionary[event[self.activity_name]]
             #print(activity_coded)
-            self.traces[traces_counter].append(activity_coded)
+            traces[traces_counter].append(activity_coded)
             #print(self.traces[traces_counter])
             if(activity_coded in outcomes):
                 traces_counter+=1
 
         #converto ogni traccia in array piuttosto che liste
-        for i in range(0,len(self.traces)):
-            self.traces[i] = np.array(self.traces[i])
+        for i in range(0,len(traces)):
+            traces[i] = np.array(traces[i])
 
 
+        self.traces_train, self.traces_test = train_test_split(traces, test_size=0.2, random_state=42, shuffle=False)
+
+        #return traces_train, traces_test
         #print(self.traces.size)
         #print(self.traces)
 
 
-    def build_training_test_sets(self):
-        """
-        Genera finestre di lunghezza fissata (self.example_size) per ogni traccia. (self.x_training)
-        Genera un array contenente le next activities (interi) per ogni finestra. (self.y_training)
-        Genera un array contenente l'outcome (intero) per ogni finestra. (self.z_training)
-        """
-        #print(self.traces)
+    def build_windows(self,traces,win_size):
+        X_vec = []
+        Y_vec = []
+        Z_vec = []
 
-        traces_train, traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
-
-        print(len(self.traces))
-        print(len(traces_train))
-        print(len(traces_test))
-
-        X_train = []
-        Y_train = []
-        Z_train = []
-
-        X_test = []
-        Y_test = []
-        Z_test = []
-
-        #generate training sets
-        for trace in traces_train:
+        for trace in traces:
             #print(trace)
             i=0
             #print(i)
             j=1
             while j < trace.size:
                 #print(j)
-                current_example = np.zeros(self.example_size)
-                values = trace[0:j] if j <= self.example_size else \
-                         trace[j - self.example_size:j]
-                Y_train.append(trace[j])
-                current_example[self.example_size - values.size:] = values
-                X_train.append(current_example)
+                current_example = np.zeros(win_size)
+                values = trace[0:j] if j <= win_size else \
+                         trace[j - win_size:j]
+                Y_vec.append(trace[j])
+                current_example[win_size - values.size:] = values
+                X_vec.append(current_example)
                 encoded_outcome = trace[trace.size-1]
-                Z_train.append(encoded_outcome)
+                Z_vec.append(encoded_outcome)
                 j += 1
             i+=1
 
-        for trace in traces_test:
-            #print(trace)
-            i=0
-            #print(i)
-            j=1
-            while j < trace.size:
-                #print(j)
-                current_example = np.zeros(self.example_size)
-                values = trace[0:j] if j <= self.example_size else \
-                         trace[j - self.example_size:j]
-                Y_test.append(trace[j])
-                current_example[self.example_size - values.size:] = values
-                X_test.append(current_example)
-                encoded_outcome = trace[trace.size-1]
-                Z_test.append(encoded_outcome)
-                j += 1
-            i+=1
+        X_vec = np.asarray(X_vec)
+        Y_vec = np.asarray(Y_vec)
+        Z_vec = np.asarray(Z_vec)
 
-        # print(self.x_training)
-        # print(len(self.x_training))
-        # print(self.y_training)
-        # print(len(self.y_training))
-        # print(self.z_training)
-        # print(len(self.z_training))
+        return X_vec,Y_vec,Z_vec
+
+    # def build_training_test_sets(self):
+    #     """
+    #     Genera finestre di lunghezza fissata (self.example_size) per ogni traccia. (self.x_training)
+    #     Genera un array contenente le next activities (interi) per ogni finestra. (self.y_training)
+    #     Genera un array contenente l'outcome (intero) per ogni finestra. (self.z_training)
+    #     """
+    #     #print(self.traces)
+    #
+    #     #traces_train, traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
+    #
+    #     # print(len(self.traces))
+    #     # print(len(traces_train))
+    #     # print(len(traces_test))
+    #
+    #     X_train = []
+    #     Y_train = []
+    #     Z_train = []
+    #
+    #     X_test = []
+    #     Y_test = []
+    #     Z_test = []
+    #
+    #     #generate training sets
+    #     for trace in traces_train:
+    #         #print(trace)
+    #         i=0
+    #         #print(i)
+    #         j=1
+    #         while j < trace.size:
+    #             #print(j)
+    #             current_example = np.zeros(self.example_size)
+    #             values = trace[0:j] if j <= self.example_size else \
+    #                      trace[j - self.example_size:j]
+    #             Y_train.append(trace[j])
+    #             current_example[self.example_size - values.size:] = values
+    #             X_train.append(current_example)
+    #             encoded_outcome = trace[trace.size-1]
+    #             Z_train.append(encoded_outcome)
+    #             j += 1
+    #         i+=1
+    #
+    #     for trace in traces_test:
+    #         #print(trace)
+    #         i=0
+    #         #print(i)
+    #         j=1
+    #         while j < trace.size:
+    #             #print(j)
+    #             current_example = np.zeros(self.example_size)
+    #             values = trace[0:j] if j <= self.example_size else \
+    #                      trace[j - self.example_size:j]
+    #             Y_test.append(trace[j])
+    #             current_example[self.example_size - values.size:] = values
+    #             X_test.append(current_example)
+    #             encoded_outcome = trace[trace.size-1]
+    #             Z_test.append(encoded_outcome)
+    #             j += 1
+    #         i+=1
+    #
+    #     # print(self.x_training)
+    #     # print(len(self.x_training))
+    #     # print(self.y_training)
+    #     # print(len(self.y_training))
+    #     # print(self.z_training)
+    #     # print(len(self.z_training))
+    #
+    #
+    #     X_train = np.asarray(X_train)
+    #     Y_train = np.asarray(Y_train)
+    #     Z_train = np.asarray(Z_train)
+    #
+    #     X_test = np.asarray(X_test)
+    #     Y_test = np.asarray(Y_test)
+    #     Z_test = np.asarray(Z_test)
+    #
+    #     # print("After first transformation:")
+    #     # print(self.x_training)
+    #     # print(self.y_training)
+    #     # print(self.z_training)
+    #
+    #     # print("After second transformation:")
+    #     # print(self.x_training)
+    #     # print(self.y_training)
+    #     # print(self.z_training)
+    #     # print(self.act_dictionary)
+    #
+    #     # X_train, X_test, Y_train, Y_test, Z_train, Z_test = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
+    #     #                                                   random_state=42, shuffle=False)
+    #
+    #     leA = preprocessing.LabelEncoder()
+    #     Y_train = leA.fit_transform(Y_train)
+    #     Y_test = leA.transform(Y_test)
+    #
+    #     leO = preprocessing.LabelEncoder()
+    #     Z_train = leO.fit_transform(Z_train)
+    #     Z_test = leO.transform(Z_test)
+    #
+    #     return X_train, X_test, Y_train, Y_test, Z_train, Z_test
+
+    def objective(self,params):
+
+            unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
+            #size_act = (unique_events + 1) // 2
+
+            input_act = Input(shape=(params['win_size'],), dtype='int32', name='input_act')
+            x_act = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=params['win_size'])(
+                             input_act)
+            #gensim per word to vec
+            n_layers = int(params["n_layers"]["n_layers"])
+
+            l1 = LSTM(params["shared_lstm_size"], return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(x_act)
+            l1 = BatchNormalization()(l1)
+
+            l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+            l_a = BatchNormalization()(l_a)
+            l_o = LSTM(params["lstmO_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+            l_o = BatchNormalization()(l_o)
+
+            for i in range(2,n_layers+1):
+                l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
+                l_a = BatchNormalization()(l_a)
+
+                l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
+                l_o = BatchNormalization()(l_o)
+
+            output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(l_a)
+            output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(l_o)
+
+            model = Model(inputs=input_act, outputs=[output_l, output_o])
+            print(model.summary())
+
+            opt = Adam(lr=params["learning_rate"])
+
+            model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, loss_weights=[params['gamma'], 1-params['gamma']] ,metrics=['accuracy'])
+            early_stopping = EarlyStopping(monitor='val_loss',
+                                           patience=20)
+            lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+                                           min_delta=0.0001, cooldown=0, min_lr=0)
 
 
-        X_train = np.asarray(X_train)
-        Y_train = np.asarray(Y_train)
-        Z_train = np.asarray(Z_train)
+            X_train,Y_train,Z_train = self.build_windows(self.traces_train,params['win_size'])
 
-        X_test = np.asarray(X_test)
-        Y_test = np.asarray(Y_test)
-        Z_test = np.asarray(Z_test)
+            Y_train = self.leA.fit_transform(Y_train)
+            Z_train = self.leO.fit_transform(Z_train)
 
-        # print("After first transformation:")
-        # print(self.x_training)
-        # print(self.y_training)
-        # print(self.z_training)
+            Y_train = to_categorical(Y_train)
+            Z_train = to_categorical(Z_train)
 
-        # print("After second transformation:")
-        # print(self.x_training)
-        # print(self.y_training)
-        # print(self.z_training)
-        # print(self.act_dictionary)
+            history = model.fit(X_train, [Y_train, Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
-        # X_train, X_test, Y_train, Y_test, Z_train, Z_test = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
-        #                                                   random_state=42, shuffle=False)
+            scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
-        leA = preprocessing.LabelEncoder()
-        Y_train = leA.fit_transform(Y_train)
-        Y_test = leA.transform(Y_test)
+            score = min(scores)
+            #global best_score, best_model
+            if self.best_score > score:
+                    self.best_score = score
+                    self.best_model = model
 
-        leO = preprocessing.LabelEncoder()
-        Z_train = leO.fit_transform(Z_train)
-        Z_test = leO.transform(Z_test)
-
-        return X_train, X_test, Y_train, Y_test, Z_train, Z_test
+            return {'loss': score, 'status': STATUS_OK}
+            #model.save("model/generate_" + self.log_name + ".h5")
 
 
-
-    def build_neural_network_model(self,X_train, Y_train, Z_train ):
-
-        Y_train = to_categorical(Y_train)
-        Z_train = to_categorical(Z_train) #trasformazione in vettori per la rete
-
-        unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
-        # X_train, X_val, Y_train, Y_val, Z_train, Z_val = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
-        #                                                   random_state=42, shuffle=True)
-
-        # print(Y_train.shape)
-        # print(Z_train.shape)
-        size_act = (unique_events + 1) // 2
-
-        input_act = Input(shape=(self.example_size,), dtype='int32', name='input_act')
-        x_act = Embedding(output_dim=size_act, input_dim=unique_events+1, input_length=self.example_size)(
-                         input_act)
-
-        l1 = LSTM(16, return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
-        b1 = BatchNormalization()(l1)
-        l2_1 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) # the layer specialized in activity prediction
-        b2_1 = BatchNormalization()(l2_1)
-        l2_2 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) #the layer specialized in outcome prediction
-        b2_2 = BatchNormalization()(l2_2)
-
-        output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(b2_1)
-        output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(b2_2)
-
-        model = Model(inputs=input_act, outputs=[output_l, output_o])
-        print(model.summary())
-
-        opt = Adam()
-        model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
-        # early_stopping = EarlyStopping(monitor='val_loss',
-        #                                patience=20)
-        # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
-        #                                min_delta=0.0001, cooldown=0, min_lr=0)
-
-        early_stopping = EarlyStopping(monitor='val_loss', patience=42)
-        #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
-        lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
-
-        #Y_train = tf.squeeze(Y_train, axis=-1)
-        #Z_train = tf.squeeze(Z_train, axis=-1)
-        model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=128, verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
-        #validation_data=(X_val, [Y_val,Z_val])
-
-        model.save("model/generate_" + self.log_name + ".h5")
+    #
+    # def build_neural_network_model(self,X_train, Y_train, Z_train ):
+    #
+    #     Y_train = to_categorical(Y_train)
+    #     Z_train = to_categorical(Z_train) #trasformazione in vettori per la rete
+    #
+    #     unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
+    #     # X_train, X_val, Y_train, Y_val, Z_train, Z_val = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
+    #     #                                                   random_state=42, shuffle=True)
+    #
+    #     # print(Y_train.shape)
+    #     # print(Z_train.shape)
+    #     size_act = (unique_events + 1) // 2
+    #
+    #     input_act = Input(shape=(self.example_size,), dtype='int32', name='input_act')
+    #     x_act = Embedding(output_dim=size_act, input_dim=unique_events+1, input_length=self.example_size)(
+    #                      input_act)
+    #
+    #     l1 = LSTM(16, return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
+    #     b1 = BatchNormalization()(l1)
+    #     l2_1 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) # the layer specialized in activity prediction
+    #     b2_1 = BatchNormalization()(l2_1)
+    #     l2_2 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) #the layer specialized in outcome prediction
+    #     b2_2 = BatchNormalization()(l2_2)
+    #
+    #     output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(b2_1)
+    #     output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(b2_2)
+    #
+    #     model = Model(inputs=input_act, outputs=[output_l, output_o])
+    #     print(model.summary())
+    #
+    #     opt = Adam()
+    #     model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
+    #     # early_stopping = EarlyStopping(monitor='val_loss',
+    #     #                                patience=20)
+    #     # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+    #     #                                min_delta=0.0001, cooldown=0, min_lr=0)
+    #
+    #     early_stopping = EarlyStopping(monitor='val_loss', patience=42)
+    #     #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+    #     lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
+    #
+    #     #Y_train = tf.squeeze(Y_train, axis=-1)
+    #     #Z_train = tf.squeeze(Z_train, axis=-1)
+    #     model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=128, verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+    #     #validation_data=(X_val, [Y_val,Z_val])
+    #
+    #     model.save("model/generate_" + self.log_name + ".h5")
 
 
 
@@ -340,8 +439,12 @@ class Manager:
         plt.xlabel('Predicted label')
         #plt.show()
 
-    def evaluate_model(self,X_test,Y_test,Z_test):
+    def evaluate_model(self,win_size):
         model = load_model("model/generate_" + self.log_name + ".h5")
+
+        X_test, Y_test, Z_test = self.build_windows(self.traces_test,win_size)
+        Y_test = self.leA.transform(Y_test)
+        Z_test = self.leO.transform(Z_test)
 
         prediction = model.predict(X_test, batch_size=128, verbose = 0)
         y_pred = prediction[0]
