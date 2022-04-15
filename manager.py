@@ -149,6 +149,7 @@ class Manager:
         for i in range(0,len(self.traces)):
             self.traces[i] = np.array(self.traces[i])
 
+
         #print(self.traces.size)
         #print(self.traces)
 
@@ -161,8 +162,22 @@ class Manager:
         """
         #print(self.traces)
 
-        #print(self.traces.size)
-        for trace in self.traces:
+        traces_train, traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
+
+        print(len(self.traces))
+        print(len(traces_train))
+        print(len(traces_test))
+
+        X_train = []
+        Y_train = []
+        Z_train = []
+
+        X_test = []
+        Y_test = []
+        Z_test = []
+
+        #generate training sets
+        for trace in traces_train:
             #print(trace)
             i=0
             #print(i)
@@ -172,13 +187,29 @@ class Manager:
                 current_example = np.zeros(self.example_size)
                 values = trace[0:j] if j <= self.example_size else \
                          trace[j - self.example_size:j]
-                self.y_training.append(trace[j])
+                Y_train.append(trace[j])
                 current_example[self.example_size - values.size:] = values
-                self.x_training.append(current_example)
+                X_train.append(current_example)
                 encoded_outcome = trace[trace.size-1]
-                self.z_training.append(encoded_outcome)
-                # if(j==(trace.size-1)):
-                #     self.z_training.append(trace[j])
+                Z_train.append(encoded_outcome)
+                j += 1
+            i+=1
+
+        for trace in traces_test:
+            #print(trace)
+            i=0
+            #print(i)
+            j=1
+            while j < trace.size:
+                #print(j)
+                current_example = np.zeros(self.example_size)
+                values = trace[0:j] if j <= self.example_size else \
+                         trace[j - self.example_size:j]
+                Y_test.append(trace[j])
+                current_example[self.example_size - values.size:] = values
+                X_test.append(current_example)
+                encoded_outcome = trace[trace.size-1]
+                Z_test.append(encoded_outcome)
                 j += 1
             i+=1
 
@@ -189,17 +220,19 @@ class Manager:
         # print(self.z_training)
         # print(len(self.z_training))
 
-        self.y_training = np.asarray(self.y_training)
-        self.z_training = np.asarray(self.z_training)
 
+        X_train = np.asarray(X_train)
+        Y_train = np.asarray(Y_train)
+        Z_train = np.asarray(Z_train)
 
+        X_test = np.asarray(X_test)
+        Y_test = np.asarray(Y_test)
+        Z_test = np.asarray(Z_test)
 
         # print("After first transformation:")
         # print(self.x_training)
         # print(self.y_training)
         # print(self.z_training)
-
-        self.x_training = np.asarray(self.x_training)
 
         # print("After second transformation:")
         # print(self.x_training)
@@ -207,8 +240,8 @@ class Manager:
         # print(self.z_training)
         # print(self.act_dictionary)
 
-        X_train, X_test, Y_train, Y_test, Z_train, Z_test = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
-                                                          random_state=42, shuffle=True)
+        # X_train, X_test, Y_train, Y_test, Z_train, Z_test = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
+        #                                                   random_state=42, shuffle=False)
 
         leA = preprocessing.LabelEncoder()
         Y_train = leA.fit_transform(Y_train)
