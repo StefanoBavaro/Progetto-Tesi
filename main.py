@@ -77,56 +77,60 @@ best_params = fmin(
   fn=manager.objective,
   space=search_space,
   algo=algorithm,
-  max_evals=3,
+  max_evals=30,
   trials=trials)
 print(len(trials))
 
 best_params = space_eval(search_space,best_params)
 print(best_params)
 
-outfile.write("\nHyperopt trials")
-outfile.write("\ntid,loss,output_dim_embedding,shared_lstm_size,lstmA_size_1,lstmO_size_1,n_layers,...,batch_size,learning_rate")
+outfile.write("\nHyperopt trials:")
+outfile.write("\ntid,loss,params used")
 for trial in trials.trials:
-    n_layers = trial['misc']['vals']['n_layers'][0]
-    if(n_layers==1):
-        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
-                                                trial['result']['loss'],
-                                                trial['misc']['vals']['output_dim_embedding'][0],
-                                                trial['misc']['vals']['shared_lstm_size'][0],
-                                                trial['misc']['vals']['lstmA_size_1'][0],
-                                                trial['misc']['vals']['lstmO_size_1'][0],
-                                                trial['misc']['vals']['n_layers'][0],
-                                                trial['misc']['vals']['dropout'][0],
-                                                trial['misc']['vals']['batch_size'][0],
-                                                trial['misc']['vals']['learning_rate'][0],
-                                                trial['misc']['vals']['gamma'][0]
-                                                ))
-    elif(n_layers==2):
-         outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
-                                                trial['result']['loss'],
-                                                trial['misc']['vals']['output_dim_embedding'][0],
-                                                trial['misc']['vals']['shared_lstm_size'][0],
-                                                trial['misc']['vals']['lstmA_size_1'][0],
-                                                trial['misc']['vals']['lstmO_size_1'][0],
-                                                trial['misc']['vals']['n_layers'][0],
-                                                trial['misc']['vals']['dropout'][0],
-                                                trial['misc']['vals']['batch_size'][0],
-                                                trial['misc']['vals']['learning_rate'][0],
-                                                trial['misc']['vals']['gamma'][0]
-                                                ))
-    elif(n_layers==3):
-         outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
-                                                trial['result']['loss'],
-                                                trial['misc']['vals']['output_dim_embedding'][0],
-                                                trial['misc']['vals']['shared_lstm_size'][0],
-                                                trial['misc']['vals']['lstmA_size_1'][0],
-                                                trial['misc']['vals']['lstmO_size_1'][0],
-                                                trial['misc']['vals']['n_layers'][0],
-                                                trial['misc']['vals']['dropout'][0],
-                                                trial['misc']['vals']['batch_size'][0],
-                                                trial['misc']['vals']['learning_rate'][0],
-                                                trial['misc']['vals']['gamma'][0]
-                                                ))
+    #print(trial)
+    outfile.write("\n%d, %f, %s" % (trial['tid'],
+                            trial['result']['loss'],
+                            trial['misc']['vals']))
+    # n_layers = trial['misc']['vals']['n_layers'][0]
+    # if(n_layers==1):
+    #     outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
+    #                                             trial['result']['loss'],
+    #                                             trial['misc']['vals']['output_dim_embedding'][0],
+    #                                             trial['misc']['vals']['shared_lstm_size'][0],
+    #                                             trial['misc']['vals']['lstmA_size_1'][0],
+    #                                             trial['misc']['vals']['lstmO_size_1'][0],
+    #                                             trial['misc']['vals']['n_layers'][0],
+    #                                             trial['misc']['vals']['dropout'][0],
+    #                                             trial['misc']['vals']['batch_size'][0],
+    #                                             trial['misc']['vals']['learning_rate'][0],
+    #                                             trial['misc']['vals']['gamma'][0]
+    #                                             ))
+    # elif(n_layers==2):
+    #      outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
+    #                                             trial['result']['loss'],
+    #                                             trial['misc']['vals']['output_dim_embedding'][0],
+    #                                             trial['misc']['vals']['shared_lstm_size'][0],
+    #                                             trial['misc']['vals']['lstmA_size_1'][0],
+    #                                             trial['misc']['vals']['lstmO_size_1'][0],
+    #                                             trial['misc']['vals']['n_layers'][0],
+    #                                             trial['misc']['vals']['dropout'][0],
+    #                                             trial['misc']['vals']['batch_size'][0],
+    #                                             trial['misc']['vals']['learning_rate'][0],
+    #                                             trial['misc']['vals']['gamma'][0]
+    #                                             ))
+    # elif(n_layers==3):
+    #      outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
+    #                                             trial['result']['loss'],
+    #                                             trial['misc']['vals']['output_dim_embedding'][0],
+    #                                             trial['misc']['vals']['shared_lstm_size'][0],
+    #                                             trial['misc']['vals']['lstmA_size_1'][0],
+    #                                             trial['misc']['vals']['lstmO_size_1'][0],
+    #                                             trial['misc']['vals']['n_layers'][0],
+    #                                             trial['misc']['vals']['dropout'][0],
+    #                                             trial['misc']['vals']['batch_size'][0],
+    #                                             trial['misc']['vals']['learning_rate'][0],
+    #                                             trial['misc']['vals']['gamma'][0]
+    #                                             ))
 
 outfile.write("\n\nBest parameters:")
 print(best_params, file=outfile)
@@ -134,9 +138,16 @@ print(best_params, file=outfile)
 manager.best_model.save("model/generate_" + log_name + ".h5")
 
 print('Evaluating final model...')
-reportNA,reportO = manager.evaluate_model(best_params['win_size'])
+reportNA,cm_NA,reportO,cm_O = manager.evaluate_model(best_params['win_size'])
+
+outfile.write("\nNext activity metrics:\n")
 print(reportNA, file=outfile)
+outfile.write("\nNext activity confusion matrix:\n")
+print(cm_NA, file=outfile)
+outfile.write("\nOutcome metrics:\n")
 print(reportO, file=outfile)
+outfile.write("\nOutcome confusion matrix:\n")
+print(cm_O, file=outfile)
 
 
 
