@@ -336,7 +336,7 @@ class Manager:
             Y_train = to_categorical(Y_train)
             Z_train = to_categorical(Z_train)
 
-            history = model.fit(X_train, [Y_train, Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
@@ -467,7 +467,7 @@ class Manager:
         reportO = metrics.classification_report(Z_test, rounded_out_prediction, digits=3)
         print(reportO)
 
-        return reportNA,reportO
+        return reportNA,cm_act,reportO,cm_out
 
 
 
