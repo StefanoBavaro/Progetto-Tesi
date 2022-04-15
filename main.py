@@ -84,7 +84,8 @@ def objective(params):
         print(model.summary())
 
         opt = Adam(lr=params["learning_rate"])
-        model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
+
+        model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, loss_weights=[params['gamma'], 1-params['gamma']] ,metrics=['accuracy'])
         early_stopping = EarlyStopping(monitor='val_loss',
                                        patience=20)
         lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
@@ -95,7 +96,9 @@ def objective(params):
         # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
 
         history = model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+
         scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
+        #scores = [(params['gamma']*history.history['val_act_output_loss'][epoch])+(((1-params['gamma'])*history.history['val_outcome_output_loss'][epoch])) for epoch in range(len(history.history['loss']))]
         score = min(scores)
         global best_score, best_model
         if best_score > score:
@@ -121,6 +124,7 @@ search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embed
                     'lstmA_size_3_3': scope.int(hp.loguniform('lstmA_size_3_3', np.log(10), np.log(150))),
                     'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))}
                 ]),
+                'gamma': hp.uniform("gamma", 0.1,0.9),
                 'dropout': hp.uniform("dropout", 0, 0.5),
                 'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                 'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
@@ -132,12 +136,14 @@ best_model = None
 outfile = open('../Progetto-Tesi/data/log_files/' + log_name + '_opt.log', 'w')
 
 trials = Trials()
+
 best_params = fmin(
   fn=objective,
   space=search_space,
   algo=algorithm,
   max_evals=20,
   trials=trials)
+print(len(trials))
 
 best_params = space_eval(search_space,best_params)
 print(best_params)
@@ -147,7 +153,7 @@ outfile.write("\ntid,loss,output_dim_embedding,shared_lstm_size,lstmA_size_1,lst
 for trial in trials.trials:
     n_layers = trial['misc']['vals']['n_layers'][0]
     if(n_layers==1):
-        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f" % (trial['tid'],
+        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
                                                 trial['result']['loss'],
                                                 trial['misc']['vals']['output_dim_embedding'][0],
                                                 trial['misc']['vals']['shared_lstm_size'][0],
@@ -156,10 +162,11 @@ for trial in trials.trials:
                                                 trial['misc']['vals']['n_layers'][0],
                                                 trial['misc']['vals']['dropout'][0],
                                                 trial['misc']['vals']['batch_size'][0],
-                                                trial['misc']['vals']['learning_rate'][0]
+                                                trial['misc']['vals']['learning_rate'][0],
+                                                trial['misc']['vals']['gamma'][0]
                                                 ))
     elif(n_layers==2):
-        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f" % (trial['tid'],
+         outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
                                                 trial['result']['loss'],
                                                 trial['misc']['vals']['output_dim_embedding'][0],
                                                 trial['misc']['vals']['shared_lstm_size'][0],
@@ -168,10 +175,11 @@ for trial in trials.trials:
                                                 trial['misc']['vals']['n_layers'][0],
                                                 trial['misc']['vals']['dropout'][0],
                                                 trial['misc']['vals']['batch_size'][0],
-                                                trial['misc']['vals']['learning_rate'][0]
+                                                trial['misc']['vals']['learning_rate'][0],
+                                                trial['misc']['vals']['gamma'][0]
                                                 ))
     elif(n_layers==3):
-        outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f" % (trial['tid'],
+         outfile.write("\n%d,%f,%d, %d, %d, %d, %d, %f,%d,%f,%f" % (trial['tid'],
                                                 trial['result']['loss'],
                                                 trial['misc']['vals']['output_dim_embedding'][0],
                                                 trial['misc']['vals']['shared_lstm_size'][0],
@@ -180,7 +188,8 @@ for trial in trials.trials:
                                                 trial['misc']['vals']['n_layers'][0],
                                                 trial['misc']['vals']['dropout'][0],
                                                 trial['misc']['vals']['batch_size'][0],
-                                                trial['misc']['vals']['learning_rate'][0]
+                                                trial['misc']['vals']['learning_rate'][0],
+                                                trial['misc']['vals']['gamma'][0]
                                                 ))
 
 outfile.write("\n\nBest parameters:")
