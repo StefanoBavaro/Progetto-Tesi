@@ -349,57 +349,103 @@ class Manager:
             return {'loss': score, 'status': STATUS_OK}
             #model.save("model/generate_" + self.log_name + ".h5")
 
+    def nextActivityNetwork(self,params):
 
-    #
-    # def build_neural_network_model(self,X_train, Y_train, Z_train ):
-    #
-    #     Y_train = to_categorical(Y_train)
-    #     Z_train = to_categorical(Z_train) #trasformazione in vettori per la rete
-    #
-    #     unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
-    #     # X_train, X_val, Y_train, Y_val, Z_train, Z_val = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
-    #     #                                                   random_state=42, shuffle=True)
-    #
-    #     # print(Y_train.shape)
-    #     # print(Z_train.shape)
-    #     size_act = (unique_events + 1) // 2
-    #
-    #     input_act = Input(shape=(self.example_size,), dtype='int32', name='input_act')
-    #     x_act = Embedding(output_dim=size_act, input_dim=unique_events+1, input_length=self.example_size)(
-    #                      input_act)
-    #
-    #     l1 = LSTM(16, return_sequences=True, kernel_initializer='glorot_uniform')(x_act)
-    #     b1 = BatchNormalization()(l1)
-    #     l2_1 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) # the layer specialized in activity prediction
-    #     b2_1 = BatchNormalization()(l2_1)
-    #     l2_2 = LSTM(16, return_sequences=False, kernel_initializer='glorot_uniform')(b1) #the layer specialized in outcome prediction
-    #     b2_2 = BatchNormalization()(l2_2)
-    #
-    #     output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(b2_1)
-    #     output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(b2_2)
-    #
-    #     model = Model(inputs=input_act, outputs=[output_l, output_o])
-    #     print(model.summary())
-    #
-    #     opt = Adam()
-    #     model.compile(loss={'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
-    #     # early_stopping = EarlyStopping(monitor='val_loss',
-    #     #                                patience=20)
-    #     # lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
-    #     #                                min_delta=0.0001, cooldown=0, min_lr=0)
-    #
-    #     early_stopping = EarlyStopping(monitor='val_loss', patience=42)
-    #     #model_checkpoint = ModelCheckpoint('output_files/models/model_{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
-    #     lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
-    #
-    #     #Y_train = tf.squeeze(Y_train, axis=-1)
-    #     #Z_train = tf.squeeze(Z_train, axis=-1)
-    #     model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=128, verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
-    #     #validation_data=(X_val, [Y_val,Z_val])
-    #
-    #     model.save("model/generate_" + self.log_name + ".h5")
+            unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
+            #size_act = (unique_events + 1) // 2
+
+            input_act = Input(shape=(params['win_size'],), dtype='int32', name='input_act')
+            x_act = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=params['win_size'])(
+                             input_act)
+                #gensim per word to vec
+            n_layers = int(params["n_layers"]["n_layers"])
+
+            l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(x_act)
+            l_a = BatchNormalization()(l_a)
+
+            for i in range(2,n_layers+1):
+                l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
+                l_a = BatchNormalization()(l_a)
+
+            output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(l_a)
+            model = Model(inputs=input_act, outputs=output_l)
+
+            print(model.summary())
+
+            opt = Adam(lr=params["learning_rate"])
+
+            model.compile(loss={'act_output':'categorical_crossentropy'}, optimizer=opt,metrics=['accuracy'])
+            early_stopping = EarlyStopping(monitor='val_loss',patience=20)
+            lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+                                               min_delta=0.0001, cooldown=0, min_lr=0)
 
 
+            X_train,Y_train,_ = self.build_windows(self.traces_train,params['win_size'])
+
+            Y_train = self.leA.fit_transform(Y_train)
+            Y_train = to_categorical(Y_train)
+
+            history = model.fit(X_train, Y_train, epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+
+            scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
+
+            score = min(scores)
+                #global best_score, best_model
+            if self.best_score > score:
+                    self.best_score = score
+                    self.best_model = model
+
+            return {'loss': score, 'status': STATUS_OK}
+            #model.save("model/generate_" + self.log_name + ".h5")
+
+    def objective(self,params):
+
+            unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
+            #size_act = (unique_events + 1) // 2
+
+            input_act = Input(shape=(params['win_size'],), dtype='int32', name='input_act')
+            x_act = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=params['win_size'])(
+                             input_act)
+            #gensim per word to vec
+            n_layers = int(params["n_layers"]["n_layers"])
+
+            l_o = LSTM(params["lstmO_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(x_act)
+            l_o = BatchNormalization()(l_o)
+
+            for i in range(2,n_layers+1):
+                l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)], return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
+                l_o = BatchNormalization()(l_o)
+
+            output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(l_o)
+
+            model = Model(inputs=input_act, outputs=output_o)
+            print(model.summary())
+
+            opt = Adam(lr=params["learning_rate"])
+
+            model.compile(loss={'outcome_output':'categorical_crossentropy'}, optimizer=opt, metrics=['accuracy'])
+            early_stopping = EarlyStopping(monitor='val_loss',patience=20)
+            lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+                                           min_delta=0.0001, cooldown=0, min_lr=0)
+
+
+            X_train,_,Z_train = self.build_windows(self.traces_train,params['win_size'])
+
+            Z_train = self.leO.fit_transform(Z_train)
+            Z_train = to_categorical(Z_train)
+
+            history = model.fit(X_train, Z_train, epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+
+            scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
+
+            score = min(scores)
+            #global best_score, best_model
+            if self.best_score > score:
+                    self.best_score = score
+                    self.best_model = model
+
+            return {'loss': score, 'status': STATUS_OK}
+            #model.save("model/generate_" + self.log_name + ".h5")
 
     def plot_confusion_matrix(self,cm, classes,
                             normalize=False,
@@ -435,6 +481,44 @@ class Manager:
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
         #plt.show()
+
+
+    def evaluate_model_nextAct(self,model, win_size):
+        X_test, Y_test, _ = self.build_windows(self.traces_test,win_size)
+        Y_test = self.leA.transform(Y_test)
+
+        prediction = model.predict(X_test, batch_size=128, verbose = 0)
+        y_pred=prediction[0]
+        rounded_act_prediction = np.argmax(y_pred,axis=-1)
+
+        cm_act = confusion_matrix(y_true= Y_test, y_pred=rounded_act_prediction)
+        cm_plot_labels_act = range(0,self.outsize_act)
+        #print(cm_act)
+        self.plot_confusion_matrix(cm=cm_act, classes=cm_plot_labels_act, title='Confusion Matrix Next Activity')
+        reportNA=metrics.classification_report(Y_test, rounded_act_prediction, digits=3)
+        print(reportNA)
+        return reportNA,cm_act
+
+    def evaluate_model_outcome(self,model, win_size):
+        X_test, _, Z_test = self.build_windows(self.traces_test,win_size)
+        Z_test = self.leO.transform(Z_test)
+
+        prediction = model.predict(X_test, batch_size=128, verbose = 0)
+        if(len(prediction) == 1):
+            z_pred = prediction[0]
+        else:
+            z_pred = prediction[1]
+
+        rounded_out_prediction = np.argmax(z_pred,axis=-1)
+
+        cm_out = confusion_matrix(y_true= Z_test, y_pred=rounded_out_prediction)
+        cm_plot_labels_out = range(0,self.outsize_out)
+        #print(cm_out)
+        self.plot_confusion_matrix(cm=cm_out, classes=cm_plot_labels_out, title='Confusion Matrix Outcome')
+        reportO = metrics.classification_report(Z_test, rounded_out_prediction, digits=3)
+        print(reportO)
+
+        return reportO,cm_out
 
     def evaluate_model(self,win_size):
         model = load_model("model/generate_" + self.log_name + ".h5")
