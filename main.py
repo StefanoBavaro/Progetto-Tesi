@@ -25,10 +25,10 @@ from hyperopt.pyll.base import scope
 from hyperopt.pyll.stochastic import sample
 
 
-log_name="sepsis_cases_1_sorted2"
+log_name="Production_Sorted"
 activity_name = "Activity"
 case_name = "Case ID"
-timestamp_name = "time:timestamp"
+timestamp_name = "Complete Timestamp"
 outcome_name = "label"
 net_type = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net
 #example_size = 4
@@ -63,7 +63,7 @@ if(net_type==0):
                         'lstmA_size_3_3': scope.int(hp.loguniform('lstmA_size_3_3', np.log(10), np.log(150))),
                         'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))}
                     ]),
-                    'win_size': hp.choice("win_size", [4, 8, 16, 32]),
+                    'win_size': 4,
                     'gamma': hp.uniform("gamma", 0.1,0.9),
                     'dropout': hp.uniform("dropout", 0, 0.5),
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
@@ -71,10 +71,10 @@ if(net_type==0):
                     }
     outfile = open('../Progetto-Tesi/data/log_files/' + log_name + '_doubleOutput.log', 'w')
     best_params = fmin(
-      fn=manager.objective1, #change objective1 in a proper name
+      fn=manager.doubleOutputNetwork, #change objective1 in a proper name
       space=search_space,
       algo=algorithm,
-      max_evals=30,
+      max_evals=20,
       trials=trials)
 elif(net_type==1):
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -105,7 +105,7 @@ elif(net_type==1):
           fn=manager.nextActivityNetwork, #change objective1 in a proper name
           space=search_space,
           algo=algorithm,
-          max_evals=30,
+          max_evals=3,
           trials=trials)
 elif(net_type==2):
      search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -136,7 +136,7 @@ elif(net_type==2):
           fn=manager.outcomeNetwork, #change objective1 in a proper name
           space=search_space,
           algo=algorithm,
-          max_evals=30,
+          max_evals=3,
           trials=trials)
 
 
@@ -144,12 +144,12 @@ elif(net_type==2):
 # best_model = None
 
 #da eliminare
-best_params = fmin(
-  fn=manager.objective,
-  space=search_space,
-  algo=algorithm,
-  max_evals=30,
-  trials=trials)
+# best_params = fmin(
+#   fn=manager.objective,
+#   space=search_space,
+#   algo=algorithm,
+#   max_evals=3,
+#   trials=trials)
 print(len(trials))
 
 best_params = space_eval(search_space,best_params)
@@ -167,44 +167,43 @@ for trial in trials.trials:
 outfile.write("\n\nBest parameters:")
 print(best_params, file=outfile)
 
-manager.best_model.save("model/generate_" + log_name + net_type + ".h5")
+manager.best_model.save("model/generate_" + log_name + str(net_type) + ".h5")
 
 print('Evaluating final model...')
-# model= load_model("model/generate_" + log_name + net_type+".h5")
-# if(net_type==0):
-#     reportNA,cmNA = manager.evaluate_model_nextAct(model,best_params['win_size'])
-#     reportO,cmO = manager.evaluate_model_outcome(model,best_params['win_size'])
-#     outfile.write("\nNext activity metrics:\n")
-#     print(reportNA, file=outfile)
-#     outfile.write("\nNext activity confusion matrix:\n")
-#     print(cmNA, file=outfile)
-#     outfile.write("\nOutcome metrics:\n")
-#     print(reportO, file=outfile)
-#     outfile.write("\nOutcome confusion matrix:\n")
-#     print(cmO, file=outfile)
-# elif(net_type==1):
-#     reportNA,cmNA = manager.evaluate_model_nextAct(model,best_params['win_size'])
-#     outfile.write("\nNext activity metrics:\n")
-#     print(reportNA, file=outfile)
-#     outfile.write("\nNext activity confusion matrix:\n")
-#     print(cmNA, file=outfile)
-# elif(net_type==2):
-#     reportO,cmO = manager.evaluate_model_outcome(model,best_params['win_size'])
-#     outfile.write("\nOutcome metrics:\n")
-#     print(reportO, file=outfile)
-#     outfile.write("\nOutcome confusion matrix:\n")
-#     print(cmO, file=outfile)
+model= load_model("model/generate_" + log_name + str(net_type)+".h5")
+if(net_type==0):
+    reportNA,cmNA,reportO,cmO = manager.evaluate_model_doubleOut(model,best_params['win_size'])
+    outfile.write("\nNext activity metrics:\n")
+    print(reportNA, file=outfile)
+    outfile.write("\nNext activity confusion matrix:\n")
+    print(cmNA, file=outfile)
+    outfile.write("\nOutcome metrics:\n")
+    print(reportO, file=outfile)
+    outfile.write("\nOutcome confusion matrix:\n")
+    print(cmO, file=outfile)
+elif(net_type==1):
+    reportNA,cmNA = manager.evaluate_model_nextAct(model,best_params['win_size'])
+    outfile.write("\nNext activity metrics:\n")
+    print(reportNA, file=outfile)
+    outfile.write("\nNext activity confusion matrix:\n")
+    print(cmNA, file=outfile)
+elif(net_type==2):
+    reportO,cmO = manager.evaluate_model_outcome(model,best_params['win_size'])
+    outfile.write("\nOutcome metrics:\n")
+    print(reportO, file=outfile)
+    outfile.write("\nOutcome confusion matrix:\n")
+    print(cmO, file=outfile)
 
-reportNA,cm_NA,reportO,cm_O = manager.evaluate_model(best_params['win_size'])
-
-outfile.write("\nNext activity metrics:\n")
-print(reportNA, file=outfile)
-outfile.write("\nNext activity confusion matrix:\n")
-print(cm_NA, file=outfile)
-outfile.write("\nOutcome metrics:\n")
-print(reportO, file=outfile)
-outfile.write("\nOutcome confusion matrix:\n")
-print(cm_O, file=outfile)
+# reportNA,cm_NA,reportO,cm_O = manager.evaluate_model(best_params['win_size'])
+#
+# outfile.write("\nNext activity metrics:\n")
+# print(reportNA, file=outfile)
+# outfile.write("\nNext activity confusion matrix:\n")
+# print(cm_NA, file=outfile)
+# outfile.write("\nOutcome metrics:\n")
+# print(reportO, file=outfile)
+# outfile.write("\nOutcome confusion matrix:\n")
+# print(cm_O, file=outfile)
 
 
 

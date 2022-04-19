@@ -287,7 +287,7 @@ class Manager:
     #
     #     return X_train, X_test, Y_train, Y_test, Z_train, Z_test
 
-    def objective(self,params):
+    def doubleOutputNetwork(self,params):
 
             unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
             #size_act = (unique_events + 1) // 2
@@ -336,7 +336,7 @@ class Manager:
             Y_train = to_categorical(Y_train)
             Z_train = to_categorical(Z_train)
 
-            history = model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, [Y_train, Z_train], epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
@@ -385,7 +385,7 @@ class Manager:
             Y_train = self.leA.fit_transform(Y_train)
             Y_train = to_categorical(Y_train)
 
-            history = model.fit(X_train, Y_train, epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, Y_train, epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
@@ -398,7 +398,7 @@ class Manager:
             return {'loss': score, 'status': STATUS_OK}
             #model.save("model/generate_" + self.log_name + ".h5")
 
-    def objective(self,params):
+    def outcomeNetwork(self,params):
 
             unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
             #size_act = (unique_events + 1) // 2
@@ -434,7 +434,7 @@ class Manager:
             Z_train = self.leO.fit_transform(Z_train)
             Z_train = to_categorical(Z_train)
 
-            history = model.fit(X_train, Z_train, epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, Z_train, epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
@@ -488,7 +488,7 @@ class Manager:
         Y_test = self.leA.transform(Y_test)
 
         prediction = model.predict(X_test, batch_size=128, verbose = 0)
-        y_pred=prediction[0]
+        y_pred=prediction
         rounded_act_prediction = np.argmax(y_pred,axis=-1)
 
         cm_act = confusion_matrix(y_true= Y_test, y_pred=rounded_act_prediction)
@@ -504,10 +504,8 @@ class Manager:
         Z_test = self.leO.transform(Z_test)
 
         prediction = model.predict(X_test, batch_size=128, verbose = 0)
-        if(len(prediction) == 1):
-            z_pred = prediction[0]
-        else:
-            z_pred = prediction[1]
+        z_pred = prediction
+
 
         rounded_out_prediction = np.argmax(z_pred,axis=-1)
 
@@ -520,8 +518,8 @@ class Manager:
 
         return reportO,cm_out
 
-    def evaluate_model(self,win_size):
-        model = load_model("model/generate_" + self.log_name + ".h5")
+    def evaluate_model_doubleOut(self,model,win_size):
+        #model = load_model("model/generate_" + self.log_name + ".h5")
 
         X_test, Y_test, Z_test = self.build_windows(self.traces_test,win_size)
         Y_test = self.leA.transform(Y_test)
