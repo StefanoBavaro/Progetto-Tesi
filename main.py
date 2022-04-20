@@ -30,7 +30,7 @@ activity_name = "Activity"
 case_name = "Case ID"
 timestamp_name = "Complete Timestamp"
 outcome_name = "label"
-net_type = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net
+net_type = 2 #0 = double output ; 1 = nextActivity net ; 2= outcome net
 #example_size = 4
 
 manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name)
@@ -94,7 +94,7 @@ elif(net_type==1):
                         #'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))
                      }
                     ]),
-                    'win_size': hp.choice("win_size", [4, 8, 16, 32]),
+                    'win_size':4,
                     #'gamma': hp.uniform("gamma", 0.1,0.9),
                     'dropout': hp.uniform("dropout", 0, 0.5),
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
@@ -105,7 +105,7 @@ elif(net_type==1):
           fn=manager.nextActivityNetwork, #change objective1 in a proper name
           space=search_space,
           algo=algorithm,
-          max_evals=3,
+          max_evals=20,
           trials=trials)
 elif(net_type==2):
      search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -125,7 +125,7 @@ elif(net_type==2):
                         'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))
                      }
                     ]),
-                    'win_size': hp.choice("win_size", [4, 8, 16, 32]),
+                    'win_size': 4,
                     #'gamma': hp.uniform("gamma", 0.1,0.9),
                     'dropout': hp.uniform("dropout", 0, 0.5),
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
@@ -136,7 +136,7 @@ elif(net_type==2):
           fn=manager.outcomeNetwork, #change objective1 in a proper name
           space=search_space,
           algo=algorithm,
-          max_evals=3,
+          max_evals=20,
           trials=trials)
 
 
@@ -194,16 +194,6 @@ elif(net_type==2):
     outfile.write("\nOutcome confusion matrix:\n")
     print(cmO, file=outfile)
 
-# reportNA,cm_NA,reportO,cm_O = manager.evaluate_model(best_params['win_size'])
-#
-# outfile.write("\nNext activity metrics:\n")
-# print(reportNA, file=outfile)
-# outfile.write("\nNext activity confusion matrix:\n")
-# print(cm_NA, file=outfile)
-# outfile.write("\nOutcome metrics:\n")
-# print(reportO, file=outfile)
-# outfile.write("\nOutcome confusion matrix:\n")
-# print(cm_O, file=outfile)
 
 
 

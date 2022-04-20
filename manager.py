@@ -336,7 +336,7 @@ class Manager:
             Y_train = to_categorical(Y_train)
             Z_train = to_categorical(Z_train)
 
-            history = model.fit(X_train, [Y_train, Z_train], epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, [Y_train, Z_train], epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
@@ -385,7 +385,7 @@ class Manager:
             Y_train = self.leA.fit_transform(Y_train)
             Y_train = to_categorical(Y_train)
 
-            history = model.fit(X_train, Y_train, epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, Y_train, epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
@@ -434,7 +434,7 @@ class Manager:
             Z_train = self.leO.fit_transform(Z_train)
             Z_train = to_categorical(Z_train)
 
-            history = model.fit(X_train, Z_train, epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+            history = model.fit(X_train, Z_train, epochs=500, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
