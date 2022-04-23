@@ -51,6 +51,8 @@ class Manager:
         self.best_score = np.inf
         self.best_model = None
 
+        self.words_emb = []
+
         self.outsize_act=0
         self.outsize_out=0
 
@@ -134,11 +136,14 @@ class Manager:
             if event[self.activity_name] not in self.act_dictionary.keys():
                 self.act_dictionary[event[self.activity_name]] = len(self.act_dictionary.keys()) + 1
 
-        #print(self.act_dictionary)
+        print(self.act_dictionary)
 
+
+        #if(self.net_embedding==0):
         self.getTraces(data)
-        #self.build_training_test_sets()
-        #return self.build_training_test_sets()
+        # else:
+        #     self.getWord2VecEmbeddings(data)
+
 
     def getTraces(self,data):
         """
@@ -146,12 +151,24 @@ class Manager:
         """
         traces = np.empty((len(data[self.case_name].unique()),), dtype=object)
         traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
-        outcomes = range(1, len(data[self.outcome_name].unique())+1)
+        if(self.net_embedding==0):
+            outcomes = range(1, len(data[self.outcome_name].unique())+1)
+        elif(self.net_embedding==1):
+             name_outcomes = data[self.outcome_name].unique()
+             outcomes = []
+             for outcome in name_outcomes:
+                outcomes.append(''.join(filter(str.isalnum, outcome)))
         #print(outcomes)
+
+
 
         traces_counter = 0
         for i, event in data.iterrows():
-            activity_coded = self.act_dictionary[event[self.activity_name]]
+            if(self.net_embedding==0):
+                activity_coded = self.act_dictionary[event[self.activity_name]]
+            elif(self.net_embedding==1):
+                activity_coded = event[self.activity_name]
+                activity_coded = ''.join(filter(str.isalnum, activity_coded))
             #print(activity_coded)
             traces[traces_counter].append(activity_coded)
             #print(self.traces[traces_counter])
@@ -163,8 +180,25 @@ class Manager:
             traces[i] = np.array(traces[i])
 
 
+        # print(traces)
         self.traces_train, self.traces_test = train_test_split(traces, test_size=0.2, random_state=42, shuffle=False)
+        # X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
+        # print(X_train)
+        # print(Y_train)
+        # print(Z_train)
+        #
+        # print("train")
+        # print(self.traces_train)
+        #
+        # print("test")
+        # print(self.traces_test)
 
+
+    def getWord2VecEmbeddings(self,data):
+        activities = self.act_dictionary.values()
+        model = Word2Vec(sentences=activities, vector_size=100, window=5, min_count=1, workers=4)
+        model.train(activities, total_examples=1, epochs=1)
+        self.words_emb = model.wv
 
     def build_windows(self,traces,win_size):
         X_vec = []
@@ -172,7 +206,7 @@ class Manager:
         Z_vec = []
 
         for trace in traces:
-            #print(trace)
+            print(trace)
             i=0
             #print(i)
             j=1
@@ -195,115 +229,52 @@ class Manager:
 
         return X_vec,Y_vec,Z_vec
 
-    # def build_training_test_sets(self):
-    #     """
-    #     Genera finestre di lunghezza fissata (self.example_size) per ogni traccia. (self.x_training)
-    #     Genera un array contenente le next activities (interi) per ogni finestra. (self.y_training)
-    #     Genera un array contenente l'outcome (intero) per ogni finestra. (self.z_training)
-    #     """
-    #     #print(self.traces)
+
+    # def create_embeddings(data_dir, embeddings_path, vocab_path, **params):
     #
-    #     #traces_train, traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
+    #     tokenize = lambda x: simple_preprocess(x)
     #
-    #     # print(len(self.traces))
-    #     # print(len(traces_train))
-    #     # print(len(traces_test))
+    #     class SentenceGenerator(object):
+    #         def __init__(self, dirname):
+    #             self.dirname = dirname
     #
-    #     X_train = []
-    #     Y_train = []
-    #     Z_train = []
-    #
-    #     X_test = []
-    #     Y_test = []
-    #     Z_test = []
-    #
-    #     #generate training sets
-    #     for trace in traces_train:
-    #         #print(trace)
-    #         i=0
-    #         #print(i)
-    #         j=1
-    #         while j < trace.size:
-    #             #print(j)
-    #             current_example = np.zeros(self.example_size)
-    #             values = trace[0:j] if j <= self.example_size else \
-    #                      trace[j - self.example_size:j]
-    #             Y_train.append(trace[j])
-    #             current_example[self.example_size - values.size:] = values
-    #             X_train.append(current_example)
-    #             encoded_outcome = trace[trace.size-1]
-    #             Z_train.append(encoded_outcome)
-    #             j += 1
-    #         i+=1
-    #
-    #     for trace in traces_test:
-    #         #print(trace)
-    #         i=0
-    #         #print(i)
-    #         j=1
-    #         while j < trace.size:
-    #             #print(j)
-    #             current_example = np.zeros(self.example_size)
-    #             values = trace[0:j] if j <= self.example_size else \
-    #                      trace[j - self.example_size:j]
-    #             Y_test.append(trace[j])
-    #             current_example[self.example_size - values.size:] = values
-    #             X_test.append(current_example)
-    #             encoded_outcome = trace[trace.size-1]
-    #             Z_test.append(encoded_outcome)
-    #             j += 1
-    #         i+=1
-    #
-    #     # print(self.x_training)
-    #     # print(len(self.x_training))
-    #     # print(self.y_training)
-    #     # print(len(self.y_training))
-    #     # print(self.z_training)
-    #     # print(len(self.z_training))
-    #
-    #
-    #     X_train = np.asarray(X_train)
-    #     Y_train = np.asarray(Y_train)
-    #     Z_train = np.asarray(Z_train)
-    #
-    #     X_test = np.asarray(X_test)
-    #     Y_test = np.asarray(Y_test)
-    #     Z_test = np.asarray(Z_test)
-    #
-    #     # print("After first transformation:")
-    #     # print(self.x_training)
-    #     # print(self.y_training)
-    #     # print(self.z_training)
-    #
-    #     # print("After second transformation:")
-    #     # print(self.x_training)
-    #     # print(self.y_training)
-    #     # print(self.z_training)
-    #     # print(self.act_dictionary)
-    #
-    #     # X_train, X_test, Y_train, Y_test, Z_train, Z_test = train_test_split(self.x_training, self.y_training, self.z_training, test_size=0.2,
-    #     #                                                   random_state=42, shuffle=False)
-    #
-    #     leA = preprocessing.LabelEncoder()
-    #     Y_train = leA.fit_transform(Y_train)
-    #     Y_test = leA.transform(Y_test)
-    #
-    #     leO = preprocessing.LabelEncoder()
-    #     Z_train = leO.fit_transform(Z_train)
-    #     Z_test = leO.transform(Z_test)
-    #
-    #     return X_train, X_test, Y_train, Y_test, Z_train, Z_test
+    #         def __iter__(self):
+    #             for fname in os.listdir(self.dirname):
+    #                 for line in open(os.path.join(self.dirname, fname)):
+    #                     yield tokenize(line)
+
+
 
     def nn(self,params):
+            #it is not done before so that, in case, win_size can become a parameter
+            X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
+
+            if(self.net_embedding==0):
+                if(self.net_out!=2):
+                    Y_train = self.leA.fit_transform(Y_train)
+                    Y_train = to_categorical(Y_train)
+                    label=Y_train
+                if(self.net_out!=1):
+                    Z_train = self.leO.fit_transform(Z_train)
+                    Z_train = to_categorical(Z_train)
+                    label=Z_train
+            else:
+                print("WIP")
+                # w2vModel=  Word2Vec(size=params['word2vec_dim'], window=3, min_count=1, sg=0, workers=-1)
+
 
             unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
             #size_act = (unique_events + 1) // 2
 
 
             input_act = Input(shape=self.win_size, dtype='int32', name='input_act')
-            x_act = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=self.win_size)(
-                             input_act)
-            #gensim per word to vec
+            if(self.net_embedding==0):
+                x_act = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=self.win_size)(
+                                 input_act)
+            else:
+                print("WIP")
+
+
             n_layers = int(params["n_layers"]["n_layers"])
 
             l1 = LSTM(params["shared_lstm_size"], return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(x_act)
@@ -352,19 +323,6 @@ class Manager:
                                            patience=20)
             lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
                                            min_delta=0.0001, cooldown=0, min_lr=0)
-
-
-            X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
-
-
-            if(self.net_out!=2):
-                Y_train = self.leA.fit_transform(Y_train)
-                Y_train = to_categorical(Y_train)
-                label=Y_train
-            if(self.net_out!=1):
-                Z_train = self.leO.fit_transform(Z_train)
-                Z_train = to_categorical(Z_train)
-                label=Z_train
 
             if(self.net_out==0):
                 history = model.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
