@@ -1,0 +1,74 @@
+
+Hyperopt trials:
+tid,loss,params used
+0, 1.772772, {'batch_size': [4.520224225637929], 'dropout': [0.16139769254683517], 'learning_rate': [0.0007770762717189084], 'lstmA_size_1': [39.634252582988296], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [137.57383764753632], 'shared_lstm_size': [97.65819380148484], 'word2vec_size': [445.0]}
+1, 1.744603, {'batch_size': [5.456763289890609], 'dropout': [0.31561378339367624], 'learning_rate': [0.0006500190463443776], 'lstmA_size_1': [33.188240417247286], 'lstmA_size_2_2': [32.0290308289034], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [15.515641118722217], 'shared_lstm_size': [64.75744961971513], 'word2vec_size': [842.0]}
+2, 1.754178, {'batch_size': [5.589401579959422], 'dropout': [0.4265907000938746], 'learning_rate': [0.0002560933013471683], 'lstmA_size_1': [62.814741541041236], 'lstmA_size_2_2': [90.3773040574001], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [89.34196624175468], 'shared_lstm_size': [71.35171695246788], 'word2vec_size': [103.0]}
+3, 1.748359, {'batch_size': [5.440251820640501], 'dropout': [0.42125401660213524], 'learning_rate': [0.00017247546375255513], 'lstmA_size_1': [61.66050252925846], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [78.34042712637661], 'lstmA_size_3_3': [34.665437459826805], 'n_layers': [2], 'output_dim_embedding': [70.13530073832604], 'shared_lstm_size': [139.15146685027278], 'word2vec_size': [100.0]}
+4, 1.798872, {'batch_size': [3.4845799800176422], 'dropout': [0.4114259832309332], 'learning_rate': [0.0005775879659166188], 'lstmA_size_1': [103.07210062204628], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [24.032230407909278], 'lstmA_size_3_3': [10.370660041916514], 'n_layers': [2], 'output_dim_embedding': [79.04044229850611], 'shared_lstm_size': [19.415330429195294], 'word2vec_size': [779.0]}
+5, 1.760095, {'batch_size': [5.005651746708514], 'dropout': [0.1734495787398478], 'learning_rate': [2.7815197613816587e-05], 'lstmA_size_1': [54.0456626462966], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [26.59526738987626], 'shared_lstm_size': [39.08159662791463], 'word2vec_size': [937.0]}
+6, 1.745998, {'batch_size': [3.5589985784536973], 'dropout': [0.22758380644317683], 'learning_rate': [2.92664510641877e-05], 'lstmA_size_1': [82.79079217706203], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [10.868504089980041], 'lstmA_size_3_3': [107.14904900144639], 'n_layers': [2], 'output_dim_embedding': [42.63687717380394], 'shared_lstm_size': [26.384070656327385], 'word2vec_size': [82.0]}
+7, 1.807606, {'batch_size': [4.668254998703412], 'dropout': [0.21856946120163268], 'learning_rate': [0.004372968871101677], 'lstmA_size_1': [128.9552283761523], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [30.881838177631717], 'shared_lstm_size': [17.570700631411338], 'word2vec_size': [217.0]}
+8, 1.793032, {'batch_size': [4.850985888506007], 'dropout': [0.35485196562320576], 'learning_rate': [0.005664186512955929], 'lstmA_size_1': [54.0337254344472], 'lstmA_size_2_2': [93.47652115317356], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [17.156592288030115], 'shared_lstm_size': [51.26419561247249], 'word2vec_size': [664.0]}
+9, 1.689098, {'batch_size': [5.29075220253476], 'dropout': [0.29275065634214703], 'learning_rate': [0.00048181132931156647], 'lstmA_size_1': [13.831911188744556], 'lstmA_size_2_2': [28.068245806035684], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [12.323728262277362], 'shared_lstm_size': [83.38833052778877], 'word2vec_size': [287.0]}
+10, 1.883900, {'batch_size': [4.27757280369827], 'dropout': [0.15218122986885724], 'learning_rate': [1.5021568385642648e-05], 'lstmA_size_1': [15.55640355700643], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [54.60439376393158], 'lstmA_size_3_3': [58.54116915331399], 'n_layers': [2], 'output_dim_embedding': [93.56598575161128], 'shared_lstm_size': [10.43023371694306], 'word2vec_size': [242.0]}
+11, 1.764142, {'batch_size': [5.441307228416188], 'dropout': [0.11868164805183756], 'learning_rate': [0.0024841338784918395], 'lstmA_size_1': [88.97312327073159], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [82.90878257242137], 'lstmA_size_3_3': [14.445362506671975], 'n_layers': [2], 'output_dim_embedding': [137.6785383377175], 'shared_lstm_size': [11.795932679563128], 'word2vec_size': [341.0]}
+12, 1.734270, {'batch_size': [4.981070197666943], 'dropout': [0.4401757991777772], 'learning_rate': [0.00016273739678334014], 'lstmA_size_1': [93.10824042056457], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [33.119806216990156], 'lstmA_size_3_3': [21.076853995563187], 'n_layers': [2], 'output_dim_embedding': [16.615646696850096], 'shared_lstm_size': [21.069270379668794], 'word2vec_size': [561.0]}
+13, 1.737202, {'batch_size': [4.526754539853865], 'dropout': [0.40322003617594226], 'learning_rate': [0.00010511066742027682], 'lstmA_size_1': [120.1335028716687], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [10.92804668908184], 'lstmA_size_3_3': [87.0665995991063], 'n_layers': [2], 'output_dim_embedding': [48.13659749854484], 'shared_lstm_size': [14.335361371458237], 'word2vec_size': [986.0]}
+14, 1.842526, {'batch_size': [3.6239925406240494], 'dropout': [0.48634721039733475], 'learning_rate': [2.9058329777298346e-05], 'lstmA_size_1': [40.16679329708857], 'lstmA_size_2_2': [76.42165413813696], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [21.021806705301138], 'shared_lstm_size': [27.809211765564534], 'word2vec_size': [520.0]}
+15, 1.693153, {'batch_size': [5.497182738776504], 'dropout': [0.40685099405433056], 'learning_rate': [0.009076097142979635], 'lstmA_size_1': [17.352783743350695], 'lstmA_size_2_2': [14.621893554534632], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [20.720403472585755], 'shared_lstm_size': [36.80530105564541], 'word2vec_size': [196.0]}
+16, 1.774982, {'batch_size': [3.034781750518626], 'dropout': [0.4507436392013878], 'learning_rate': [0.00040769424260316494], 'lstmA_size_1': [130.0159355685408], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [43.1503183629822], 'shared_lstm_size': [60.18298909124734], 'word2vec_size': [924.0]}
+17, 1.770993, {'batch_size': [5.9670051658944505], 'dropout': [0.35509686157618103], 'learning_rate': [0.00296565214487961], 'lstmA_size_1': [127.55208439844343], 'lstmA_size_2_2': [135.0794772518606], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [11.023527368739602], 'shared_lstm_size': [25.138981891138577], 'word2vec_size': [1014.0]}
+18, 1.768955, {'batch_size': [3.038857927505803], 'dropout': [0.43850777080491266], 'learning_rate': [6.316696001957748e-05], 'lstmA_size_1': [47.09386764899104], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [10.099581911463542], 'shared_lstm_size': [88.97800192395871], 'word2vec_size': [775.0]}
+19, 1.728937, {'batch_size': [4.302029897860386], 'dropout': [0.39920635450646025], 'learning_rate': [0.004226640008045879], 'lstmA_size_1': [134.3331895467774], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [100.44972471681433], 'lstmA_size_3_3': [21.89351313398994], 'n_layers': [2], 'output_dim_embedding': [19.966486794439675], 'shared_lstm_size': [13.97932502395615], 'word2vec_size': [801.0]}
+
+Best parameters:{'batch_size': 5, 'dropout': 0.29275065634214703, 'learning_rate': 0.00048181132931156647, 'lstmA_size_1': 13, 'n_layers': {'lstmA_size_2_2': 28, 'n_layers': 2}, 'output_dim_embedding': 12, 'shared_lstm_size': 83, 'win_size': 4, 'word2vec_size': 287}
+
+Next activity metrics:
+              precision    recall  f1-score   support
+
+           0      0.636     0.500     0.560        14
+           1      0.000     0.000     0.000         5
+           3      0.167     0.286     0.211        14
+           4      0.333     0.118     0.174        17
+           7      0.667     0.400     0.500        10
+           8      0.333     0.500     0.400         2
+           9      0.000     0.000     0.000         0
+          14      0.333     0.667     0.444         3
+          16      0.688     1.000     0.815        11
+          17      0.667     0.944     0.782        36
+          18      0.711     0.914     0.800        35
+          19      0.600     0.968     0.741        31
+          20      0.682     0.938     0.789        16
+          21      0.667     1.000     0.800         4
+          22      0.500     0.194     0.279        31
+          23      0.000     0.000     0.000         5
+          25      0.000     0.000     0.000        14
+          26      0.455     0.625     0.526         8
+          27      0.700     0.233     0.350        30
+
+    accuracy                          0.573       286
+   macro avg      0.428     0.489     0.430       286
+weighted avg      0.538     0.573     0.518       286
+
+
+Next activity confusion matrix:
+[[ 7  2  2  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  2]
+ [ 1  0  3  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0]
+ [ 0  3  4  2  0  1  0  1  0  0  1  0  0  0  2  0  0  0  0]
+ [ 0  0  6  2  0  1  0  0  0  1  2  2  1  0  2  0  0  0  0]
+ [ 2  0  2  0  4  0  0  0  1  0  0  0  0  0  0  0  0  1  0]
+ [ 0  0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0  0]
+ [ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0]
+ [ 0  0  1  0  0  0  0  2  0  0  0  0  0  0  0  0  0  0  0]
+ [ 0  0  0  0  0  0  0  0 11  0  0  0  0  0  0  0  0  0  0]
+ [ 0  0  0  0  0  0  0  0  0 34  0  0  0  0  0  0  1  1  0]
+ [ 0  0  0  0  0  0  0  0  0  1 32  0  0  0  0  0  0  2  0]
+ [ 0  0  1  0  0  0  0  0  0  0  0 30  0  0  0  0  0  0  0]
+ [ 0  0  0  0  0  0  0  0  0  0  0  0 15  0  0  0  0  1  0]
+ [ 0  0  0  0  0  0  0  0  0  0  0  0  0  4  0  0  0  0  0]
+ [ 0  0  0  1  0  0  0  0  0  3  7 10  3  1  6  0  0  0  0]
+ [ 0  0  0  0  0  0  0  3  1  0  0  0  0  0  0  0  0  1  0]
+ [ 0  0  0  1  0  0  0  0  0  5  2  4  1  0  0  0  0  0  1]
+ [ 0  0  0  0  0  0  0  0  0  2  0  1  0  0  0  0  0  5  0]
+ [ 1  0  4  0  1  0  1  0  3  5  1  3  1  1  2  0  0  0  7]]
