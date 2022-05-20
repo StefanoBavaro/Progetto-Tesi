@@ -1,0 +1,86 @@
+
+Hyperopt trials:
+tid,loss,time,params used
+0, 0.865148, 267.942539, {'batch_size': [5.976937029458124], 'dropout': [0.4643470743575564], 'gamma': [0.8295281708076548], 'learning_rate': [0.00025127984660761906], 'lstmA_size_1': [11.037142022105188], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [18.618913235259907], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [14.713866314732355], 'shared_lstm_size': [39.359376354400275], 'word2vec_size': [433.0]}
+1, 0.700217, 493.663772, {'batch_size': [5.622998836660212], 'dropout': [0.10986836110577208], 'gamma': [0.6086116123623769], 'learning_rate': [6.691331307177939e-05], 'lstmA_size_1': [20.35431396844649], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [57.02854187333508], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [135.98626351412085], 'shared_lstm_size': [21.167001408943843], 'word2vec_size': [644.0]}
+2, 0.687346, 609.846680, {'batch_size': [5.0558141192038], 'dropout': [0.2005737956761494], 'gamma': [0.5806450470450054], 'learning_rate': [3.124409876318152e-05], 'lstmA_size_1': [39.56839678992342], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [34.31506305135696], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [25.779874659927145], 'shared_lstm_size': [49.39172389629686], 'word2vec_size': [631.0]}
+3, 0.751734, 162.634060, {'batch_size': [4.989784660055426], 'dropout': [0.17478384981970474], 'gamma': [0.6981242116392432], 'learning_rate': [0.0012561428714213956], 'lstmA_size_1': [79.91968645341818], 'lstmA_size_2_2': [27.716759272084047], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [42.08945130400155], 'lstmO_size_2_2': [19.395063797801274], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [18.666166466827075], 'shared_lstm_size': [22.04565831031726], 'word2vec_size': [35.0]}
+4, 0.723354, 1055.215676, {'batch_size': [3.0184103068677834], 'dropout': [0.2318595009509572], 'gamma': [0.632730078298621], 'learning_rate': [0.0004989472596007042], 'lstmA_size_1': [79.62351251181332], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [17.22429773501434], 'lstmA_size_3_3': [27.63683436733513], 'lstmO_size_1': [57.53777224690736], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [37.703996794988214], 'lstmO_size_3_3': [124.72430920356463], 'n_layers': [2], 'output_dim_embedding': [11.705779100455139], 'shared_lstm_size': [113.2771620038581], 'word2vec_size': [387.0]}
+5, 0.740018, 1782.141078, {'batch_size': [4.943274396624675], 'dropout': [0.2786773371813391], 'gamma': [0.6278253395023332], 'learning_rate': [1.3109989149118597e-05], 'lstmA_size_1': [94.69940273010941], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [122.68552262540442], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [28.60008948026343], 'shared_lstm_size': [19.55425351429683], 'word2vec_size': [84.0]}
+6, 0.688799, 671.225239, {'batch_size': [4.5762015551813295], 'dropout': [0.03850162833152471], 'gamma': [0.5863903582241667], 'learning_rate': [0.0002027177211123977], 'lstmA_size_1': [42.151830780522886], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [115.95570646073227], 'lstmA_size_3_3': [19.033198444041485], 'lstmO_size_1': [19.705182550237332], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [10.115388467655963], 'lstmO_size_3_3': [136.04673119191045], 'n_layers': [2], 'output_dim_embedding': [33.8739383526172], 'shared_lstm_size': [56.40582032992422], 'word2vec_size': [808.0]}
+7, 0.849622, 1162.980608, {'batch_size': [3.05978104374916], 'dropout': [0.2887835272025171], 'gamma': [0.8017541672122749], 'learning_rate': [0.001724386415665726], 'lstmA_size_1': [39.2037183728804], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [15.979925711467116], 'lstmA_size_3_3': [80.47601484494729], 'lstmO_size_1': [42.807505644313835], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [20.730057367856865], 'lstmO_size_3_3': [40.53015185360116], 'n_layers': [2], 'output_dim_embedding': [14.574935028048003], 'shared_lstm_size': [32.032116435839946], 'word2vec_size': [497.0]}
+8, 0.588439, 1138.454575, {'batch_size': [3.4141618957656688], 'dropout': [0.14013279968036185], 'gamma': [0.4407533206757469], 'learning_rate': [0.00012804319304259406], 'lstmA_size_1': [12.916770903941128], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [73.05196924369163], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [108.16237224299685], 'shared_lstm_size': [55.04806393308246], 'word2vec_size': [934.0]}
+9, 0.799985, 207.005143, {'batch_size': [5.372910296289309], 'dropout': [0.2449641088578905], 'gamma': [0.7562650465178286], 'learning_rate': [0.005154989229149085], 'lstmA_size_1': [21.822833134565432], 'lstmA_size_2_2': [36.58741529795497], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [23.921755431189553], 'lstmO_size_2_2': [19.17340219084005], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [98.43544539735984], 'shared_lstm_size': [69.0964040201038], 'word2vec_size': [201.0]}
+10, 0.834244, 1241.603610, {'batch_size': [4.003999840346273], 'dropout': [0.1366082389577345], 'gamma': [0.7972005387646948], 'learning_rate': [0.00047520315236870874], 'lstmA_size_1': [23.597774075872163], 'lstmA_size_2_2': [16.42340526547157], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [62.834681266025896], 'lstmO_size_2_2': [136.36086503494738], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [47.586613005322526], 'shared_lstm_size': [13.81846479515095], 'word2vec_size': [588.0]}
+11, 0.892437, 755.335157, {'batch_size': [3.76202589563729], 'dropout': [0.2954004803451918], 'gamma': [0.849128963753781], 'learning_rate': [0.0014523961265205667], 'lstmA_size_1': [107.59060757162644], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [125.39868484022917], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [36.4224853304068], 'shared_lstm_size': [20.257035578189253], 'word2vec_size': [439.0]}
+12, 0.476675, 1958.144442, {'batch_size': [4.875760679627637], 'dropout': [0.44761646862522786], 'gamma': [0.2763043114128599], 'learning_rate': [1.6791810933335865e-05], 'lstmA_size_1': [24.918236298321332], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [13.614232729338921], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [44.84964512856553], 'shared_lstm_size': [82.74285119589015], 'word2vec_size': [167.0]}
+13, 0.826020, 133.620158, {'batch_size': [5.6321568020019255], 'dropout': [0.09972783773124366], 'gamma': [0.7875447760209343], 'learning_rate': [0.0025073906430380594], 'lstmA_size_1': [38.6580704309782], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [25.10741769579647], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [137.51629905015955], 'shared_lstm_size': [39.475644380592875], 'word2vec_size': [432.0]}
+14, 0.698783, 1423.440740, {'batch_size': [4.781376209023087], 'dropout': [0.4723711004644338], 'gamma': [0.6079863450542426], 'learning_rate': [0.00020610918787160104], 'lstmA_size_1': [95.05402285802572], 'lstmA_size_2_2': [84.713279268199], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [15.189859278793284], 'lstmO_size_2_2': [43.06328779230962], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [48.885901214705754], 'shared_lstm_size': [22.55722841370982], 'word2vec_size': [546.0]}
+15, 0.401626, 1049.107637, {'batch_size': [3.557098316612087], 'dropout': [0.10240967981126609], 'gamma': [0.19238310251653543], 'learning_rate': [0.008340342808362943], 'lstmA_size_1': [92.22738405344013], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [24.65884704092669], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [103.55942739904555], 'shared_lstm_size': [13.566131035325224], 'word2vec_size': [150.0]}
+16, 0.915348, 2509.391514, {'batch_size': [3.8676935456191615], 'dropout': [0.17729025672501098], 'gamma': [0.8827509446593735], 'learning_rate': [2.9666753039030055e-05], 'lstmA_size_1': [147.1960070196213], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [20.593457822623463], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [11.902504316454023], 'shared_lstm_size': [14.58687098906932], 'word2vec_size': [229.0]}
+17, 0.454864, 1186.756895, {'batch_size': [5.511208094654449], 'dropout': [0.13625569853806668], 'gamma': [0.2689885031417612], 'learning_rate': [0.00016862434686230342], 'lstmA_size_1': [21.467096482909298], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [81.70604883298965], 'lstmA_size_3_3': [16.139008039888], 'lstmO_size_1': [11.6641455280717], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [51.912025084231445], 'lstmO_size_3_3': [11.063343185825772], 'n_layers': [2], 'output_dim_embedding': [71.78850866495628], 'shared_lstm_size': [146.47741699367148], 'word2vec_size': [52.0]}
+18, 0.758841, 1694.115211, {'batch_size': [3.8338854123136494], 'dropout': [0.45669916071245603], 'gamma': [0.6609003739564837], 'learning_rate': [0.00043914036213715823], 'lstmA_size_1': [15.486800448985056], 'lstmA_size_2_2': [36.311162004850324], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [67.80949045269972], 'lstmO_size_2_2': [28.237823092552325], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [16.87352890211723], 'shared_lstm_size': [42.69023407593393], 'word2vec_size': [207.0]}
+19, 0.866075, 2036.226693, {'batch_size': [5.562976429156528], 'dropout': [0.3851614951195251], 'gamma': [0.8216196877523009], 'learning_rate': [6.762573868232264e-05], 'lstmA_size_1': [13.255194960257123], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'lstmO_size_1': [143.85089780092747], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [15.52731342943169], 'shared_lstm_size': [29.869575530231806], 'word2vec_size': [198.0]}
+Total time: 5:58:58.851427
+
+Best parameters:{'batch_size': 3, 'dropout': 0.10240967981126609, 'gamma': 0.19238310251653543, 'learning_rate': 0.008340342808362943, 'lstmA_size_1': 92, 'lstmO_size_1': 24, 'n_layers': {'n_layers': 1}, 'output_dim_embedding': 103, 'shared_lstm_size': 13, 'word2vec_size': 150}
+
+Next activity metrics:
+              precision    recall  f1-score   support
+
+           0      0.672     0.566     0.614       221
+           1      0.651     0.619     0.635       483
+           2      0.533     0.889     0.667         9
+           3      0.824     0.968     0.890       155
+           4      0.940     1.000     0.969       156
+           5      0.728     0.770     0.748       139
+           6      0.674     0.481     0.561       129
+           7      0.636     0.446     0.524       157
+           8      0.490     0.587     0.534       465
+           9      0.231     0.310     0.265       116
+          10      0.000     0.000     0.000         6
+          11      0.000     0.000     0.000         5
+          12      0.000     0.000     0.000         7
+          13      0.256     0.297     0.275        37
+          14      0.000     0.000     0.000        22
+          15      0.000     0.000     0.000         1
+          16      0.798     0.763     0.780       135
+
+    accuracy                          0.624      2243
+   macro avg      0.437     0.453     0.439      2243
+weighted avg      0.625     0.624     0.620      2243
+
+
+Next activity confusion matrix:
+[[125  24   0   2   0   5   8   8  39  10   0   0   0   0   0   0   0]
+ [ 11 299   5   6   1   5   1   4 109  41   0   0   0   0   1   0   0]
+ [  0   1   8   0   0   0   0   0   0   0   0   0   0   0   0   0   0]
+ [  1   2   0 150   1   0   0   0   1   0   0   0   0   0   0   0   0]
+ [  0   0   0   0 156   0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   1   0 107  21   3   7   0   0   0   0   0   0   0   0]
+ [ 14   4   0   2   3   5  62   6  33   0   0   0   0   0   0   0   0]
+ [  2  19   1  12   1  14   0  70  36   2   0   0   0   0   0   0   0]
+ [ 13  79   1   9   3  11   0  18 273  58   0   0   0   0   0   0   0]
+ [  8  23   0   0   0   0   0   0  49  36   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   3   3   0   0   0   0   0   0   0]
+ [  0   2   0   0   0   0   0   0   1   2   0   0   0   0   0   0   0]
+ [  0   3   0   0   0   0   0   0   1   3   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0   0  11   0   0  26]
+ [ 12   3   0   0   1   0   0   1   4   1   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   1   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0   0  32   0   0 103]]
+
+Outcome metrics:
+              precision    recall  f1-score   support
+
+           0      0.000     0.000     0.000       245
+           1      0.891     1.000     0.942      1998
+
+    accuracy                          0.891      2243
+   macro avg      0.445     0.500     0.471      2243
+weighted avg      0.793     0.891     0.839      2243
+
+
+Outcome confusion matrix:
+[[   0  245]
+ [   0 1998]]
