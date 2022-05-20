@@ -6,6 +6,7 @@ import pandas as pd
 import datetime
 from pathlib import Path
 import itertools
+import datetime
 
 from sklearn import preprocessing
 from sklearn import metrics
@@ -29,17 +30,18 @@ import numpy
 numpy.set_printoptions(threshold=sys.maxsize)
 
 
-log_name="Production_Sorted"
-activity_name = "Activity"
+log_name="BPIC11_f1_Sorted"
+activity_name = "Activity code"
 case_name = "Case ID"
-timestamp_name = "Complete Timestamp"
+timestamp_name = "time:timestamp"
 outcome_name = "label"
 win_size = 4
 net_out = 2 #0 = double output ; 1 = nextActivity net ; 2= outcome net
-net_embedding= 1 #0 = embedding, 1 = word2vec
+net_embedding = 0 #0 = embedding, 1 = word2vec
+delimiter = ';'
 
 
-manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding)
+manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
 manager.gen_internal_csv()
 manager.csv_to_data()
 
@@ -134,14 +136,19 @@ best_params = space_eval(search_space,best_params)
 print(best_params)
 
 outfile.write("\nHyperopt trials:")
-outfile.write("\ntid,loss,params used")
+outfile.write("\ntid,loss,time,params used")
+totaltime =0
 for trial in trials.trials:
     #print(trial)
-    outfile.write("\n%d, %f, %s" % (trial['tid'],
+    outfile.write("\n%d, %f, %f, %s" % (trial['tid'],
                             trial['result']['loss'],
+                            trial['result']['time'],
                             trial['misc']['vals']))
+    totaltime = totaltime + float(trial['result']['time'])
 
+totaltime = str(datetime.timedelta(seconds=totaltime))
 
+outfile.write("\nTotal time: %s" % totaltime)
 outfile.write("\n\nBest parameters:")
 print(best_params, file=outfile)
 

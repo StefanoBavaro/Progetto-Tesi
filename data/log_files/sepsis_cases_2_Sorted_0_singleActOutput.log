@@ -1,0 +1,71 @@
+
+Hyperopt trials:
+tid,loss,time,params used
+0, 0.976059, 227.593251, {'batch_size': [5.160116227288906], 'dropout': [0.05522056953436022], 'learning_rate': [0.00010167073130660064], 'lstmA_size_1': [85.85867083260595], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [39.08553875664121], 'lstmA_size_3_3': [47.52573993424966], 'n_layers': [2], 'output_dim_embedding': [72.00025660314509], 'shared_lstm_size': [64.35289628094061], 'word2vec_size': [524.0]}
+1, 1.009637, 783.742038, {'batch_size': [3.777120968587], 'dropout': [0.11606175377916506], 'learning_rate': [2.3666874962771713e-05], 'lstmA_size_1': [51.115730979347234], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [21.177184477833627], 'shared_lstm_size': [137.52641805787465], 'word2vec_size': [131.0]}
+2, 0.991904, 232.428581, {'batch_size': [3.7161227371899703], 'dropout': [0.1956789494378275], 'learning_rate': [0.003008928973795697], 'lstmA_size_1': [22.368354087857107], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [23.198969097394297], 'shared_lstm_size': [14.11396286317188], 'word2vec_size': [537.0]}
+3, 0.975258, 448.692600, {'batch_size': [5.779873439454777], 'dropout': [0.4445273072506153], 'learning_rate': [8.888639713664361e-05], 'lstmA_size_1': [18.871410696746892], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [88.85931780461004], 'shared_lstm_size': [91.70893678334708], 'word2vec_size': [543.0]}
+4, 0.978081, 507.024246, {'batch_size': [4.734364173241309], 'dropout': [0.08719083541071077], 'learning_rate': [9.507834449299298e-05], 'lstmA_size_1': [69.14459321798954], 'lstmA_size_2_2': [10.685896144419091], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [33.48429994312888], 'shared_lstm_size': [105.88662151068453], 'word2vec_size': [373.0]}
+5, 0.987260, 699.289856, {'batch_size': [5.681370294846504], 'dropout': [0.28181106435685355], 'learning_rate': [0.00017128865170503563], 'lstmA_size_1': [11.75935223230645], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [38.300340132629785], 'lstmA_size_3_3': [14.776771245014125], 'n_layers': [2], 'output_dim_embedding': [23.32502396477205], 'shared_lstm_size': [99.76744085159129], 'word2vec_size': [857.0]}
+6, 1.104079, 467.052194, {'batch_size': [4.538519856565371], 'dropout': [0.47065679258249754], 'learning_rate': [0.0025106179564821124], 'lstmA_size_1': [11.373803822186575], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [28.55850706175769], 'lstmA_size_3_3': [35.609074219976], 'n_layers': [2], 'output_dim_embedding': [40.45433923435159], 'shared_lstm_size': [25.0693423261796], 'word2vec_size': [561.0]}
+7, 0.999651, 1150.200753, {'batch_size': [4.5859971497539], 'dropout': [0.2851933609582658], 'learning_rate': [2.5428380022985487e-05], 'lstmA_size_1': [115.38041031373926], 'lstmA_size_2_2': [28.894023915027716], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [17.811186798715138], 'shared_lstm_size': [72.02618811512343], 'word2vec_size': [732.0]}
+8, 0.995543, 1631.514614, {'batch_size': [3.6323422766175395], 'dropout': [0.3649845999422633], 'learning_rate': [0.004728949949416961], 'lstmA_size_1': [110.41677330896975], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [64.26052341511371], 'lstmA_size_3_3': [86.41513551159738], 'n_layers': [2], 'output_dim_embedding': [76.45322914049662], 'shared_lstm_size': [128.20031309522858], 'word2vec_size': [174.0]}
+9, 0.983809, 329.764579, {'batch_size': [4.128321016332184], 'dropout': [0.08552233491717787], 'learning_rate': [0.00021405192786891662], 'lstmA_size_1': [11.163438280547181], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [61.034471848824886], 'shared_lstm_size': [37.89435384375192], 'word2vec_size': [175.0]}
+10, 1.158135, 556.738585, {'batch_size': [4.349597850392609], 'dropout': [0.45431606650695233], 'learning_rate': [0.007268211146434084], 'lstmA_size_1': [87.36950074753463], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [10.006360172431988], 'lstmA_size_3_3': [28.081637151469995], 'n_layers': [2], 'output_dim_embedding': [59.25851488234237], 'shared_lstm_size': [44.518863423964376], 'word2vec_size': [108.0]}
+11, 0.992196, 1398.977655, {'batch_size': [3.216915061483302], 'dropout': [0.18155663403715705], 'learning_rate': [5.3176107945939914e-05], 'lstmA_size_1': [84.14853210751818], 'lstmA_size_2_2': [56.44912086497071], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [12.597292571419112], 'shared_lstm_size': [60.4483498589678], 'word2vec_size': [398.0]}
+12, 0.983299, 841.445733, {'batch_size': [4.542276728445572], 'dropout': [0.09562008497336383], 'learning_rate': [2.772086408750512e-05], 'lstmA_size_1': [114.12018666388913], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [16.44336858957786], 'shared_lstm_size': [16.723304825702694], 'word2vec_size': [231.0]}
+13, 0.980994, 810.609651, {'batch_size': [3.838574854407176], 'dropout': [0.4579017067669662], 'learning_rate': [0.0001588987717417723], 'lstmA_size_1': [50.83689115300453], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [99.23251493806026], 'shared_lstm_size': [102.55139053208433], 'word2vec_size': [278.0]}
+14, 0.964127, 108.955097, {'batch_size': [5.2605228200223255], 'dropout': [0.19355088648289576], 'learning_rate': [0.001246962207964976], 'lstmA_size_1': [39.87612295182164], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [13.467783791151001], 'shared_lstm_size': [33.691329220467544], 'word2vec_size': [128.0]}
+15, 1.024359, 1959.023336, {'batch_size': [3.705690791330032], 'dropout': [0.11741877603105605], 'learning_rate': [2.1791261177846964e-05], 'lstmA_size_1': [84.77955961329177], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [110.9912303317589], 'lstmA_size_3_3': [124.56975470506157], 'n_layers': [2], 'output_dim_embedding': [82.47966228496959], 'shared_lstm_size': [50.84046914496302], 'word2vec_size': [673.0]}
+16, 0.994455, 529.571789, {'batch_size': [3.9491789272727824], 'dropout': [0.2664546180247307], 'learning_rate': [0.0031002879587949434], 'lstmA_size_1': [53.776985035391036], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [27.485496562773506], 'lstmA_size_3_3': [26.755266417807686], 'n_layers': [2], 'output_dim_embedding': [56.58090876671671], 'shared_lstm_size': [29.52711695641338], 'word2vec_size': [669.0]}
+17, 0.992213, 203.175454, {'batch_size': [3.4003569071289155], 'dropout': [0.09732096182024658], 'learning_rate': [0.0022671933092862644], 'lstmA_size_1': [79.01122873575257], 'lstmA_size_2_2': [], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [146.3901503777609], 'shared_lstm_size': [13.240441964969271], 'word2vec_size': [683.0]}
+18, 1.024393, 838.207217, {'batch_size': [4.392335417513975], 'dropout': [0.22409339013382445], 'learning_rate': [3.3881381068656044e-05], 'lstmA_size_1': [12.184129565822378], 'lstmA_size_2_2': [31.800560877211637], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [48.700485594986304], 'shared_lstm_size': [24.113411972089143], 'word2vec_size': [500.0]}
+19, 1.039852, 1538.130377, {'batch_size': [3.81684966922993], 'dropout': [0.40360411906624105], 'learning_rate': [4.702618835248524e-05], 'lstmA_size_1': [12.06209250488111], 'lstmA_size_2_2': [48.659782185265115], 'lstmA_size_2_3': [], 'lstmA_size_3_3': [], 'n_layers': [1], 'output_dim_embedding': [99.2738676380564], 'shared_lstm_size': [81.83046447727189], 'word2vec_size': [62.0]}
+Total time: 4:14:22.137607
+
+Best parameters:{'batch_size': 5, 'dropout': 0.19355088648289576, 'learning_rate': 0.001246962207964976, 'lstmA_size_1': 39, 'n_layers': {'n_layers': 1}, 'output_dim_embedding': 13, 'shared_lstm_size': 33, 'win_size': 4, 'word2vec_size': 128}
+
+Next activity metrics:
+              precision    recall  f1-score   support
+
+           0      0.839     0.852     0.846       135
+           1      0.000     0.000     0.000        22
+           2      0.875     0.778     0.824         9
+           3      0.945     0.994     0.969       156
+           4      0.852     0.968     0.906       155
+           5      0.722     0.363     0.483       157
+           6      0.489     0.673     0.567       465
+           7      0.657     0.594     0.624       483
+           8      0.681     0.481     0.564       129
+           9      0.723     0.770     0.746       139
+          10      0.739     0.525     0.614       221
+          11      0.216     0.319     0.258       116
+          12      0.429     0.405     0.417        37
+          13      0.000     0.000     0.000         6
+          14      0.000     0.000     0.000         5
+          15      0.000     0.000     0.000         7
+          16      0.000     0.000     0.000         1
+
+    accuracy                          0.634      2243
+   macro avg      0.480     0.454     0.460      2243
+weighted avg      0.647     0.634     0.629      2243
+
+
+Next activity confusion matrix:
+[[115   0   0   0   0   0   0   0   0   0   0   0  20   0   0   0   0]
+ [  0   0   0   0   0   1   5   2   0   0  12   2   0   0   0   0   0]
+ [  0   0   7   0   0   0   0   2   0   0   0   0   0   0   0   0   0]
+ [  0   0   0 155   0   0   0   0   0   1   0   0   0   0   0   0   0]
+ [  0   0   0   1 150   0   4   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   1   7  57  50  23   0  14   3   2   0   0   0   0   0]
+ [  0   0   1   3   8   1 313  62   0  11   5  61   0   0   0   0   0]
+ [  0   0   0   1   7   1 132 287   0   6   5  44   0   0   0   0   0]
+ [  0   0   0   3   2   7  35   3  62   4  12   1   0   0   0   0   0]
+ [  0   0   0   0   1   3   7   1  20 107   0   0   0   0   0   0   0]
+ [  0   0   0   0   1   9  46  18   9   5 116  17   0   0   0   0   0]
+ [  0   0   0   0   0   0  41  34   0   0   4  37   0   0   0   0   0]
+ [ 22   0   0   0   0   0   0   0   0   0   0   0  15   0   0   0   0]
+ [  0   0   0   0   0   0   3   0   0   0   0   3   0   0   0   0   0]
+ [  0   0   0   0   0   0   1   2   0   0   0   2   0   0   0   0   0]
+ [  0   0   0   0   0   0   2   3   0   0   0   2   0   0   0   0   0]
+ [  0   0   0   0   0   0   1   0   0   0   0   0   0   0   0   0   0]]

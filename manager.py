@@ -22,13 +22,14 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 from hyperopt import fmin, hp, tpe, Trials, space_eval, STATUS_OK
 from gensim.models import Word2Vec
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from time import perf_counter
 
 
 
 
 class Manager:
 
-    def __init__(self, log_name, act_name, case_name, ts_name, out_name,win_size, net_out, net_embedding):
+    def __init__(self, log_name, act_name, case_name, ts_name, out_name,win_size, net_out, net_embedding, delimiter):
         self.log_name = log_name
         self.timestamp_name = ts_name
         self.case_name = case_name
@@ -37,6 +38,7 @@ class Manager:
         self.win_size = win_size
         self.net_out = net_out
         self.net_embedding = net_embedding
+        self.delimiter = delimiter
 
         #self.counter=0
 
@@ -71,7 +73,7 @@ class Manager:
         """
         print("Processing CSV...")
         filename = str(Path('../Progetto-Tesi/data/sorted_csvs/' + self.log_name + ".csv").resolve())
-        data = pd.read_csv(filename)
+        data = pd.read_csv(filename, delimiter = self.delimiter)
 
 
         data2 = data.filter([self.activity_name,self.case_name,self.timestamp_name,self.outcome_name], axis=1)
@@ -109,7 +111,7 @@ class Manager:
             idx+=1
 
         num_events = data_updated.shape[0]
-        print("NUMERO EVENTI DOPO UPDATE= " + str(num_events))
+        print("NUMERO EVENTI DOPO UPDATE = " + str(num_events))
 
         self.outsize_act = len(data_updated[self.activity_name].unique())
         #print(self.outsize_act)
@@ -117,7 +119,7 @@ class Manager:
         #print(self.outsize_out)
 
         filename = str(Path('../Progetto-Tesi/data/updated_csvs/'+self.log_name+"_updated.csv").resolve())
-        data_updated.to_csv(filename)
+        data_updated.to_csv(filename, sep = self.delimiter)
         #print(data_updated)
         print("Done: updated CSV created")
 
@@ -130,7 +132,7 @@ class Manager:
 
         print("Importing data from updated CSV...")
         filename = str(Path('../Progetto-Tesi/data/updated_csvs/' + self.log_name + "_updated.csv").resolve())
-        data = pd.read_csv(filename)
+        data = pd.read_csv(filename, delimiter= self.delimiter)
 
         #inserisco per prime nel dizionario le label degli outcome
         outcomes = data[self.outcome_name].unique()
@@ -187,8 +189,9 @@ class Manager:
                 traces_counter+=1
 
         #converto ogni traccia in array piuttosto che liste
-        # for i in range(0,len(self.traces)):
-        #     self.traces[i] = np.array(self.traces[i])
+        if(self.net_embedding==0):
+            for i in range(0,len(self.traces)):
+                self.traces[i] = np.array(self.traces[i])
 
         #print(self.traces)
         self.traces_train, self.traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
@@ -314,6 +317,7 @@ class Manager:
                 Z_vec.append(encoded_outcome)
                 j += 1
             i+=1
+
         if(self.net_embedding==0):
             X_vec = np.asarray(X_vec)
             Y_vec = np.asarray(Y_vec)
@@ -324,9 +328,16 @@ class Manager:
 
     def nn(self,params):
             #it is not done before so that, in case, win_size can become a parameter
+            start_time = perf_counter()
+            print(start_time)
+
             X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
 
-            label=None
+            # print(X_train);
+            # print(Y_train);
+            # print(Z_train);
+
+            #label=None
 
             if(self.net_out!=2):
                 Y_train = self.leA.fit_transform(Y_train)
@@ -345,19 +356,24 @@ class Manager:
             #print(unique_events)
             #size_act = (unique_events + 1) // 2
 
+            n_layers = int(params["n_layers"]["n_layers"])
+
             if(self.net_embedding==0):
+                #l_input = Input(shape=self.win_size, dtype='int32', name='input_act')
                 l_input = Input(shape=self.win_size, dtype='int32', name='input_act')
-                l_input = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=self.win_size)(l_input)
-            else:
+                emb_input = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=self.win_size)(l_input)
+                toBePassed=emb_input
+            elif(self.net_embedding==1):
                 self.getWord2VecEmbeddings(params['word2vec_size'])
                 X_train=self.encodePrefixes(params['word2vec_size'],X_train)
                 # print(type(X_train))
                 # print(np.shape(X_train))
                 l_input = Input(shape = (self.win_size, params['word2vec_size']), name = 'input_act')
+                toBePassed=l_input
 
-            n_layers = int(params["n_layers"]["n_layers"])
 
-            l1 = LSTM(params["shared_lstm_size"], return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_input)
+
+            l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(toBePassed)
             l1 = BatchNormalization()(l1)
             if(self.net_out!=2):
                 l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
@@ -418,13 +434,18 @@ class Manager:
 
             scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
 
+
+
             score = min(scores)
             #global best_score, best_model
             if self.best_score > score:
                     self.best_score = score
                     self.best_model = model
 
-            return {'loss': score, 'status': STATUS_OK}
+            end_time = perf_counter()
+
+
+            return {'loss': score, 'status': STATUS_OK, 'time': end_time - start_time}
             #models.save("models/generate_" + self.log_name + ".h5")
 
     def plot_confusion_matrix(self,cm, classes,
