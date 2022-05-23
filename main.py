@@ -1,3 +1,5 @@
+import os
+
 from manager import Manager
 from hyperopt import fmin, hp, tpe, Trials, space_eval, STATUS_OK
 
@@ -36,7 +38,7 @@ case_name = "Case ID"
 timestamp_name = "time:timestamp"
 outcome_name = "label"
 win_size = 4
-net_out = 2 #0 = double output ; 1 = nextActivity net ; 2= outcome net
+net_out = 1 #0 = double output ; 1 = nextActivity net ; 2= outcome net
 net_embedding = 0 #0 = embedding, 1 = word2vec
 delimiter = ';'
 
@@ -46,6 +48,16 @@ manager.gen_internal_csv()
 manager.csv_to_data()
 
 algorithm = tpe.suggest
+
+# try:  # try to load an already saved trials object, and increase the max
+#     trials = pickle.load(open("my_model.hyperopt", "rb"))x
+#     print("Found saved Trials! Loading...")
+#     max_trials = len(trials.trials) + trials_step
+#     print("Rerunning from {} trials to {} (+{}) trials".format(len(trials.trials), max_trials, trials_step))
+# except:  # create a new trials object and start searching
+#     trials = Trials()
+
+
 trials = Trials()
 
 if(net_out==0):
@@ -124,12 +136,31 @@ elif(net_out==2):
                     }
      outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding)+ '_singleOutOutput.log', 'w')
 
-best_params = fmin(
+# try:
+#     os.makedirs(Path('../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)))
+# except FileExistsError:
+#     print("Directory already exists \n")
+# trialsFilename = '../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)+ '/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
+
+trialsFilename = '../Progetto-Tesi/models/hpTrials/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
+
+
+best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=20,
-      trials=trials)
+      max_evals=3,
+      filename =trialsFilename)
+
+
+
+
+# best_params = fmin(
+#       fn=manager.nn,
+#       space=search_space,
+#       algo=algorithm,
+#       max_evals=20,
+#       trials=trials)
 print(len(trials))
 
 best_params = space_eval(search_space,best_params)

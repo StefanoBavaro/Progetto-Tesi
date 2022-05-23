@@ -1,0 +1,27 @@
+
+Hyperopt trials:
+tid,loss,time,params used
+0, 0.742981, 62.620364, {'batch_size': [4.196453031140612], 'dropout': [0.06386922009738621], 'learning_rate': [0.0031442652464592023], 'lstmO_size_1': [15.332937407244762], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [36.19446499114797], 'shared_lstm_size': [19.12895660196819], 'word2vec_size': [672.0]}
+1, 0.732781, 97.327363, {'batch_size': [4.374049586868647], 'dropout': [0.09347461094049814], 'learning_rate': [0.0017687127850564846], 'lstmO_size_1': [12.050404364161594], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [71.93341926925234], 'lstmO_size_3_3': [81.64824997219456], 'n_layers': [2], 'output_dim_embedding': [143.31154994162847], 'shared_lstm_size': [115.98411752727226], 'word2vec_size': [298.0]}
+2, 0.788742, 254.081519, {'batch_size': [3.4884830080031834], 'dropout': [0.25772249641117895], 'learning_rate': [2.2420581047249095e-05], 'lstmO_size_1': [13.207970477006645], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [132.96680896916968], 'lstmO_size_3_3': [123.24441765736545], 'n_layers': [2], 'output_dim_embedding': [57.971260072030326], 'shared_lstm_size': [85.3979842427748], 'word2vec_size': [384.0]}
+3, 0.740651, 100.812727, {'batch_size': [4.291739302012202], 'dropout': [0.2596993558626187], 'learning_rate': [0.0006180365020582381], 'lstmO_size_1': [13.036517712985304], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [52.04299894523558], 'lstmO_size_3_3': [57.58421730636524], 'n_layers': [2], 'output_dim_embedding': [61.656753437529126], 'shared_lstm_size': [26.82453025659467], 'word2vec_size': [832.0]}
+4, 0.740783, 103.026844, {'batch_size': [4.702468540050297], 'dropout': [0.18908730861528528], 'learning_rate': [0.0009114096355767976], 'lstmO_size_1': [16.02385379128411], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [12.25345815975181], 'lstmO_size_3_3': [140.60865000938867], 'n_layers': [2], 'output_dim_embedding': [13.320812770867954], 'shared_lstm_size': [10.896492881772785], 'word2vec_size': [739.0]}
+5, 0.733701, 39.355316, {'batch_size': [5.30382896804921], 'dropout': [0.26338613452085413], 'learning_rate': [0.0023334116490532296], 'lstmO_size_1': [46.231532209138685], 'lstmO_size_2_2': [], 'lstmO_size_2_3': [], 'lstmO_size_3_3': [], 'n_layers': [0], 'output_dim_embedding': [75.26571285592597], 'shared_lstm_size': [72.39528238799156], 'word2vec_size': [887.0]}
+Total time: 0:10:57.224134
+
+Best parameters:{'batch_size': 4, 'dropout': 0.09347461094049814, 'learning_rate': 0.0017687127850564846, 'lstmO_size_1': 12, 'n_layers': {'lstmO_size_2_3': 71, 'lstmO_size_3_3': 81, 'n_layers': 3}, 'output_dim_embedding': 143, 'shared_lstm_size': 115, 'win_size': 4, 'word2vec_size': 298}
+
+Outcome metrics:
+              precision    recall  f1-score   support
+
+           0      0.583     0.981     0.732     17154
+           1      0.720     0.064     0.118     12861
+
+    accuracy                          0.588     30015
+   macro avg      0.651     0.523     0.425     30015
+weighted avg      0.642     0.588     0.469     30015
+
+
+Outcome confusion matrix:
+[[16832   322]
+ [12034   827]]
