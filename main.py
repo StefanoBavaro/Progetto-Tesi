@@ -37,10 +37,21 @@ activity_name = "Activity code"
 case_name = "Case ID"
 timestamp_name = "time:timestamp"
 outcome_name = "label"
-win_size = 4
-net_out = 1 #0 = double output ; 1 = nextActivity net ; 2= outcome net
-net_embedding = 0 #0 = embedding, 1 = word2vec
 delimiter = ';'
+
+
+
+
+# log_name="finalThesisDataset_anon(act_state)"
+# activity_name = "act_state"
+# case_name = "request"
+# timestamp_name = "sys_updated_on"
+# outcome_name = "outcome"
+# delimiter = ','
+win_size = 4
+net_out = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net
+net_embedding = 0 #0 = embedding, 1 = word2vec
+
 
 
 manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
@@ -149,7 +160,7 @@ best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=3,
+      max_evals=20,
       filename =trialsFilename)
 
 

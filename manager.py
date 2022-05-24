@@ -61,8 +61,9 @@ class Manager:
         self.outsize_act=0
         self.outsize_out=0
 
-        self.leA= preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value',
-                                 unknown_value=-1)
+        # self.leA= preprocessing.OrdinalEncoder(handle_unknown='use_encoded_value',
+        #                          unknown_value=-1)
+        self.leA= preprocessing.LabelEncoder()
         self.leO= preprocessing.LabelEncoder()
 
     def gen_internal_csv(self):
@@ -192,6 +193,9 @@ class Manager:
             for i in range(0,len(self.traces)):
                 self.traces[i] = np.array(self.traces[i])
 
+
+        #print(list(self.act_dictionary.values()))
+        self.leA=self.leA.fit(list(self.act_dictionary.values()))
         #print(self.traces)
         self.traces_train, self.traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
         # X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
@@ -341,9 +345,10 @@ class Manager:
 
             if(self.net_out!=2):
                 self.outsize_act = len(np.unique(Y_train))
-                print(np.unique(Y_train))
-                Y_train = self.leA.fit_transform(Y_train.reshape(-1, 1))
-                print(np.unique(Y_train))
+                #print(np.unique(Y_train))
+                #Y_train = self.leA.fit_transform(Y_train.reshape(-1, 1))
+                Y_train = self.leA.transform(Y_train)
+                #print(np.unique(Y_train))
                 #print(Y_train)
                 Y_train = to_categorical(Y_train)
                 #print(Y_train)
@@ -494,7 +499,8 @@ class Manager:
 
         if(self.net_out!=2):
             print(np.unique(Y_test))
-            Y_test = self.leA.transform(Y_test.reshape(-1,1))
+            #Y_test = self.leA.transform(Y_test.reshape(-1,1))
+            Y_test= self.leA.transform(Y_test)
             print(np.unique(Y_test))
             #print(Y_test)
             #print(np.unique(Y_test))
