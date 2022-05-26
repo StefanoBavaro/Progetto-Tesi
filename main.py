@@ -49,7 +49,7 @@ delimiter = ';'
 # outcome_name = "outcome"
 # delimiter = ','
 win_size = 4
-net_out = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net
+net_out = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
 net_embedding = 0 #0 = embedding, 1 = word2vec
 
 
@@ -160,7 +160,7 @@ best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=20,
+      max_evals=1,
       filename =trialsFilename)
 
 
