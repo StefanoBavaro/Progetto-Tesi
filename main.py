@@ -39,37 +39,27 @@ timestamp_name = "time:timestamp"
 outcome_name = "label"
 delimiter = ';'
 
-
-
-
-# log_name="finalThesisDataset_anon(act_state)"
-# activity_name = "act_state"
+# log_name="finalThesisDataset_anon"
+# activity_name = "cat_item"
 # case_name = "request"
 # timestamp_name = "sys_updated_on"
 # outcome_name = "outcome"
 # delimiter = ','
 win_size = 4
 net_out = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
-net_embedding = 0 #0 = embedding, 1 = word2vec
+net_embedding = 1  #0 = embedding, 1 = word2vec
 
 
 
 manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
-manager.gen_internal_csv()
-manager.csv_to_data()
+if(net_out!=3):
+    manager.gen_internal_csv()
+    manager.csv_to_data()
+else:
+    manager.gen_internal_csv_timeNet()
+    manager.csv_to_data_timeNet()
 
 algorithm = tpe.suggest
-
-# try:  # try to load an already saved trials object, and increase the max
-#     trials = pickle.load(open("my_model.hyperopt", "rb"))x
-#     print("Found saved Trials! Loading...")
-#     max_trials = len(trials.trials) + trials_step
-#     print("Rerunning from {} trials to {} (+{}) trials".format(len(trials.trials), max_trials, trials_step))
-# except:  # create a new trials object and start searching
-#     trials = Trials()
-
-
-trials = Trials()
 
 if(net_out==0):
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -95,7 +85,7 @@ if(net_out==0):
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
     outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding) +'_doubleOutput.log', 'w')
-elif(net_out==1):
+elif(net_out==1 or net_out==3):
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                     'word2vec_size': hp.uniformint('word2vec_size',32,1024),
                     'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
@@ -119,7 +109,11 @@ elif(net_out==1):
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-    outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_singleActOutput.log', 'w')
+    if(net_out==1):
+        outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_singleActOutput.log', 'w')
+    elif(net_out==3):
+        outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeOutput.log', 'w')
+
 elif(net_out==2):
      search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                      'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
@@ -163,15 +157,6 @@ best_params, trials = manager.fmin(
       max_evals=1,
       filename =trialsFilename)
 
-
-
-
-# best_params = fmin(
-#       fn=manager.nn,
-#       space=search_space,
-#       algo=algorithm,
-#       max_evals=20,
-#       trials=trials)
 print(len(trials))
 
 best_params = space_eval(search_space,best_params)
@@ -220,7 +205,10 @@ elif(net_out==2):
     print(reportO, file=outfile)
     outfile.write("\nOutcome confusion matrix:\n")
     print(cmO, file=outfile)
-
+elif(net_out==3):
+    mae = manager.evaluate_model_timeNet(model, best_params['word2vec_size'])
+    outfile.write("\nTime prediction metrics:\n")
+    print(mae, file=outfile)
 
 
 

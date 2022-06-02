@@ -38,6 +38,8 @@ class Manager:
         self.net_embedding = net_embedding
         self.delimiter = delimiter
 
+
+        self.ending_name = "seconds_to_end"
         #self.counter=0
 
         self.act_dictionary = {}
@@ -48,6 +50,8 @@ class Manager:
         self.w2v_embeddings = {}
         #self.word_vec_dict = {}
         #self.example_size = ex_size
+        self.seconds_traces= [[]]
+
 
         # self.x_training=[]
         # self.y_training=[]
@@ -137,7 +141,8 @@ class Manager:
         #inserisco per prime nel dizionario le label degli outcome
         outcomes = data[self.outcome_name].unique()
         for i in range(0,len(outcomes)):
-            self.act_dictionary[outcomes[i]] = i+1
+            if(self.net_embedding==0):
+                self.act_dictionary[outcomes[i]] = i+1
             # if(self.net_embedding==1):
             #     self.w2v_act.append(''.join(filter(str.isalnum, outcomes[i])))
 
@@ -193,9 +198,11 @@ class Manager:
             for i in range(0,len(self.traces)):
                 self.traces[i] = np.array(self.traces[i])
 
-
         #print(list(self.act_dictionary.values()))
-        self.leA=self.leA.fit(list(self.act_dictionary.values()))
+        if(self.net_embedding==0):
+            self.leA=self.leA.fit(list(self.act_dictionary.values()))
+        elif(self.net_embedding==1):
+            self.leA.fit(self.getAnumAct(self.act_dictionary.keys()))
         #print(self.traces)
         self.traces_train, self.traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
         # X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
@@ -209,6 +216,14 @@ class Manager:
         # print("test")
         # print(self.traces_test)
 
+
+    def getAnumAct(self,listAct):
+
+        anumActList = []
+        for act in listAct:
+            anumActList.append(''.join(filter(str.isalnum, act)))
+
+        return anumActList
 
     def getWord2VecEmbeddings(self,size):
         #print(size)
@@ -326,6 +341,9 @@ class Manager:
             Y_vec = np.asarray(Y_vec)
             Z_vec = np.asarray(Z_vec)
 
+
+
+
         print("Done: windows built")
         return X_vec,Y_vec,Z_vec
 
@@ -342,9 +360,8 @@ class Manager:
 
             #label=None
 
-
             if(self.net_out!=2):
-                self.outsize_act = len(np.unique(Y_train))
+                #self.outsize_act = len(np.unique(Y_train))
                 #print(np.unique(Y_train))
                 #Y_train = self.leA.fit_transform(Y_train.reshape(-1, 1))
                 Y_train = self.leA.transform(Y_train)
@@ -638,19 +655,34 @@ class Manager:
             trials = Trials()
             print('No trials file "{}" found. Created new trials object.'.format(filename))
 
-        result = hpfmin(
-            fn,
-            space,
-            algo,
-            new_max_evals,
-            trials=trials,
-            rstate=rstate,
-            pass_expr_memo_ctrl=pass_expr_memo_ctrl,
-            verbose=verbose,
-            return_argmin=True,
-            max_queue_len=max_queue_len,
-            show_progressbar=show_progressbar,
-        )
+        if(self.net_out!=3):
+            result = hpfmin(
+                fn,
+                space,
+                algo,
+                new_max_evals,
+                trials=trials,
+                rstate=rstate,
+                pass_expr_memo_ctrl=pass_expr_memo_ctrl,
+                verbose=verbose,
+                return_argmin=True,
+                max_queue_len=max_queue_len,
+                show_progressbar=show_progressbar,
+            )
+        else:
+            result = hpfmin(
+                self.timePred_nn,
+                space,
+                algo,
+                new_max_evals,
+                trials=trials,
+                rstate=rstate,
+                pass_expr_memo_ctrl=pass_expr_memo_ctrl,
+                verbose=verbose,
+                return_argmin=True,
+                max_queue_len=max_queue_len,
+                show_progressbar=show_progressbar,
+            )
 
         joblib.dump(trials, filename+'_Trials', compress=("gzip", 3))
 
@@ -662,6 +694,387 @@ class Manager:
             self.best_model = load_model("models/generate_" + self.log_name + "_type"+str(self.net_out)+"_emb"+str(self.net_embedding) + ".h5")
 
         return result, trials
+
+
+    def gen_internal_csv_timeNet(self):
+        """
+        Genera un nuovo file csv aggiungendo, per ogni traccia del csv originale,
+        un'ultima attività contenente l'outcome della traccia.
+        """
+        print("Processing CSV...")
+        filename = str(Path('../Progetto-Tesi/data/sorted_csvs/' + self.log_name + ".csv").resolve())
+        data = pd.read_csv(filename, delimiter = self.delimiter)
+
+
+        data2 = data.filter([self.activity_name,self.case_name,self.timestamp_name,self.outcome_name,self.ending_name], axis=1)
+        data2[self.timestamp_name] = pd.to_datetime(data2[self.timestamp_name])
+        data_updated = data2.copy()
+
+        num_cases = len(data_updated[self.case_name].unique())
+        print("NUMERO TRACCE = " + str(num_cases))
+        num_events = data_updated.shape[0]
+        print("NUMERO EVENTI = " + str(num_events))
+
+        #print(data2.shape[0])
+        idx=0
+        for i, row in data2.iterrows():
+            # print(i)
+            # print(idx)
+            if(i!=data2.shape[0]-1):
+                if (row[self.case_name]!=data2.at[i+1,self.case_name]):
+                    idx+=1
+                    line = pd.DataFrame({self.activity_name: row[self.outcome_name],
+                                         self.case_name: row[self.case_name],
+                                         self.timestamp_name: row[self.timestamp_name]+datetime.timedelta(seconds=1),
+                                         self.outcome_name: row[self.outcome_name],
+                                         self.ending_name: 0
+                                         }, index=[idx])
+                    data_updated = pd.concat([data_updated.iloc[:idx], line, data_updated.iloc[idx:]]).reset_index(drop=True)
+            else: #ultima attività(ultimo caso), serve aggiungere l'evento outcome comunque
+                #print("last")
+                idx+=1
+                line = pd.DataFrame({self.activity_name: row[self.outcome_name],
+                                               self.case_name: row[self.case_name],
+                                               self.timestamp_name: row[self.timestamp_name]+datetime.timedelta(seconds=1),
+                                               self.outcome_name: row[self.outcome_name],
+                                               self.ending_name: 0
+                                               }, index=[idx])
+                data_updated = pd.concat([data_updated.iloc[:idx],line])
+            idx+=1
+
+        num_events = data_updated.shape[0]
+        print("NUMERO EVENTI DOPO UPDATE = " + str(num_events))
+
+        self.outsize_act = len(data_updated[self.activity_name].unique())
+        #print(self.outsize_act)
+        self.outsize_out = len(data_updated[self.outcome_name].unique())
+        #print(self.outsize_out)
+
+        filename = str(Path('../Progetto-Tesi/data/updated_csvs/'+self.log_name+"_updated_timeNet.csv").resolve())
+        data_updated.to_csv(filename, sep = self.delimiter)
+        #print(data_updated)
+        print("Done: updated CSV created")
+
+    def csv_to_data_timeNet(self):
+        """
+        Legge il file csv con le tracce aggiornate e costruisce un dizionario attività-chiave, dove la chiave è un intero
+        unico con cui verranno codificate le tracce.
+        Richiama la funzione di codifica delle tracce e della costruzione delle finestre.
+        """
+
+        print("Importing data from updated CSV...")
+        filename = str(Path('../Progetto-Tesi/data/updated_csvs/' + self.log_name + "_updated_timeNet.csv").resolve())
+        data = pd.read_csv(filename, delimiter= self.delimiter)
+
+        #inserisco per prime nel dizionario le label degli outcome
+        outcomes = data[self.outcome_name].unique()
+        for i in range(0,len(outcomes)):
+            self.act_dictionary[outcomes[i]] = i+1
+            # if(self.net_embedding==1):
+            #     self.w2v_act.append(''.join(filter(str.isalnum, outcomes[i])))
+
+        #inserisco il resto delle attività nel dizionario
+        for i, event in data.iterrows():
+            if event[self.activity_name] not in self.act_dictionary.keys():
+                self.act_dictionary[event[self.activity_name]] = len(self.act_dictionary.keys()) + 1
+                # if(self.net_embedding==1):
+                #     # if('' not in self.w2v_act):
+                #     #     self.w2v_act.append('')
+                #     self.w2v_act.append(''.join(filter(str.isalnum, event[self.activity_name])))
+
+        print(self.act_dictionary)
+        #print(self.w2v_act)
+
+        #if(self.net_embedding==0):
+        self.getTraces_timeNet(data)
+
+        print("Done: traces obtained")
+        # else:
+        #     self.getWord2VecEmbeddings(data)
+
+    def getTraces_timeNet(self,data):
+        """
+        Codifica ogni traccia in sequenze di interi (ovvero le codifiche di ogni attività)
+        """
+        self.traces = np.empty((len(data[self.case_name].unique()),), dtype=object)
+        self.traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
+
+        self.seconds_traces = np.zeros((len(data[self.case_name].unique()),), dtype=object)
+        self.seconds_traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
+
+
+        if(self.net_embedding==0):
+            outcomes = range(1, len(data[self.outcome_name].unique())+1)
+        elif(self.net_embedding==1):
+             name_outcomes = data[self.outcome_name].unique()
+             outcomes = []
+             for outcome in name_outcomes:
+                outcomes.append(''.join(filter(str.isalnum, outcome)))
+        #print(outcomes)
+
+        traces_counter = 0
+        for i, event in data.iterrows():
+            #print("entro")
+            if(self.net_embedding==0):
+                activity_coded = self.act_dictionary[event[self.activity_name]]
+            elif(self.net_embedding==1):
+                activity_coded = ''.join(filter(str.isalnum,event[self.activity_name]))
+                #activity_coded = ''.join(filter(str.isalnum, activity_coded))
+            #print(activity_coded)
+            seconds_to_ending = event[self.ending_name]
+            print(seconds_to_ending)
+            self.seconds_traces[traces_counter].append(seconds_to_ending)
+            self.traces[traces_counter].append(activity_coded)
+            #print(self.traces[traces_counter])
+            if(activity_coded in outcomes):
+                traces_counter+=1
+
+        #converto ogni traccia in array piuttosto che liste
+        if(self.net_embedding==0):
+            for i in range(0,len(self.traces)):
+                self.seconds_traces[i]= np.array(self.seconds_traces[i])
+                self.traces[i] = np.array(self.traces[i])
+
+
+        #print(list(self.act_dictionary.values()))
+        self.leA=self.leA.fit(list(self.act_dictionary.values()))
+        #print(self.traces)
+        self.traces_train, self.traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
+        self.seconds_traces_train, self.seconds_traces_test = train_test_split(self.seconds_traces, test_size=0.2, random_state=42, shuffle=False)
+
+
+        # X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
+        # print(X_train)
+        # print(Y_train)
+        # print(Z_train)
+
+        # print("train")
+        # print(self.traces_train)
+        #
+        # print("test")
+        # print(self.traces_test)
+
+    def build_windows_timeNet(self,traces,seconds_traces,win_size):
+        X_vec = []
+        Y_vec = []
+
+        print("Building windows...")
+        for i in range(0,len(traces)):
+            trace= traces[i]
+            sec_trace= seconds_traces[i]
+            #print(sec_trace)
+            # print("TRACE:")
+            # print(trace)
+            k=0
+            #print(i)
+            j=1
+            #while j < trace.size:
+            while j < len(trace):
+                #print(j)
+                if(self.net_embedding==0):
+                    current_example = np.zeros(win_size)
+                else:
+                    current_example= []
+                values = trace[0:j] if j <= win_size else \
+                         trace[j - win_size:j]
+                Y_vec.append(sec_trace[k])
+                #print(values)
+                current_example[win_size - len(values):] = values
+                #print(current_example)
+                X_vec.append(current_example)
+                j += 1
+                k+=1
+
+        if(self.net_embedding==0):
+            X_vec = np.asarray(X_vec)
+            Y_vec = np.asarray(Y_vec)
+
+
+
+
+        print("Done: windows built")
+        return X_vec,Y_vec
+
+
+
+
+    def timePred_nn(self,params):
+        #it is not done before so that, in case, win_size can become a parameter
+        start_time = perf_counter()
+        print(start_time)
+
+        X_train,t_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.win_size)
+        #print(t_vec)
+        #
+        # if(self.net_out==3):
+        #     t_vec=t_vec
+
+        unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
+        #print(unique_events)
+        #size_act = (unique_events + 1) // 2
+
+        n_layers = int(params["n_layers"]["n_layers"])
+
+        if(self.net_embedding==0):
+            #l_input = Input(shape=self.win_size, dtype='int32', name='input_act')
+            l_input = Input(shape=self.win_size, dtype='int32', name='input_act')
+            emb_input = Embedding(output_dim=params["output_dim_embedding"], input_dim=unique_events + 1, input_length=self.win_size)(l_input)
+            toBePassed=emb_input
+        elif(self.net_embedding==1):
+            self.getWord2VecEmbeddings(params['word2vec_size'])
+            X_train=self.encodePrefixes(params['word2vec_size'],X_train)
+            # print(type(X_train))
+            # print(np.shape(X_train))
+            l_input = Input(shape = (self.win_size, params['word2vec_size']), name = 'input_act')
+            toBePassed=l_input
+
+
+
+        l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(toBePassed)
+        l1 = BatchNormalization()(l1)
+        # if(self.net_out!=2):
+        l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+        l_a = BatchNormalization()(l_a)
+        # if(self.net_out!=1):
+        #     l_o = LSTM(params["lstmO_size_1"],  return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+        #     l_o = BatchNormalization()(l_o)
+
+        for i in range(2,n_layers+1):
+            # if(self.net_out!=2):
+            l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)],  return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
+            l_a = BatchNormalization()(l_a)
+
+            # if(self.net_out!=1):
+            #     l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)],  return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
+            #     l_o = BatchNormalization()(l_o)
+
+        outputs=[]
+        # if(self.net_out!=2):
+        #     output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(l_a)
+        #     outputs.append(output_l)
+        # if(self.net_out!=1):
+        output_o = Dense(1, kernel_initializer='glorot_uniform', name='time_output')(l_a)
+        outputs.append(output_o)
+
+        model = Model(inputs=l_input, outputs=outputs)
+        print(model.summary())
+
+        opt = Adam(lr=params["learning_rate"])
+
+        # if(self.net_out==0):
+        #     loss = {'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}
+        #     loss_weights= [params['gamma'], 1-params['gamma']]
+        # if(self.net_out==1):
+        #     loss = {'act_output':'categorical_crossentropy'}
+        #     loss_weights= [1,1]
+        # if(self.net_out==2):
+        #     loss = {'outcome_output':'categorical_crossentropy'}
+        #     loss_weights=[1,1]
+
+        loss={'time_output':'mae'}
+        model.compile(loss=loss, optimizer=opt)
+        early_stopping = EarlyStopping(monitor='val_loss',
+                                       patience=20)
+        lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=10, verbose=0, mode='auto',
+                                       min_delta=0.0001, cooldown=0, min_lr=0)
+
+        # if(self.net_out==0):
+        #     history = model.fit(X_train, [Y_train,Z_train], epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        #     # if(self.net_embedding==0):
+        #     #     history = model.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        #     # elif(self.net_embedding==1):
+        #     #     #X_train, X_val, Y_train,Y_val,Z_train,Z_val= train_test_split(X_train,Y_train,Z_train, test_size=0.2, random_state=42, shuffle=False)
+        #     #     #history = models.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_data = (X_val, [Y_val, Z_val]))
+        #     #     history = model.fit(np.asarray(X_train), [np.asarray(Y_train),np.asarray(Z_train)], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        # else:
+        history = model.fit(X_train, np.asarray(t_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+
+
+        scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
+
+
+
+        score = min(scores)
+        #global best_score, best_model
+        if self.best_score > score:
+                self.best_score = score
+                self.best_model = model
+
+        end_time = perf_counter()
+
+
+        return {'loss': score, 'status': STATUS_OK, 'time': end_time - start_time}
+
+
+
+
+    def evaluate_model_timeNet(self,model,embedding_size):
+        #models = load_model("models/generate_" + self.log_name + ".h5")
+
+        X_test, t_test = self.build_windows_timeNet(self.traces_test,self.seconds_traces_test,self.win_size)
+
+        # if(self.net_out!=2):
+        #     print(np.unique(Y_test))
+        #     #Y_test = self.leA.transform(Y_test.reshape(-1,1))
+        #     Y_test= self.leA.transform(Y_test)
+        #     print(np.unique(Y_test))
+        #     #print(Y_test)
+        #     #print(np.unique(Y_test))
+        # if(self.net_out!=1):
+        #     Z_test = self.leO.transform(Z_test)
+        # #print(Y_test)
+
+        if(self.net_embedding==1):
+             #w2v_modelX.save("models/w2v/generate_"+ self.log_name+ "_size" + str(size) + ".h5")
+
+            w2v_model = Word2Vec.load("models/w2v/generate_"+ self.log_name+ "_size" + str(embedding_size) + ".h5")
+            self.save_w2v_vocab(w2v_model)
+            X_test = self.encodePrefixes(embedding_size,X_test)
+            # X_test = np.asarray()
+
+
+        prediction = model.predict(X_test, batch_size=128, verbose = 0)
+
+        print(prediction)
+        mae = metrics.mean_absolute_error(t_test, prediction)
+        return mae
+        # if(self.net_out==0):
+        #     y_pred = prediction[0]
+        #     z_pred = prediction[1]
+        # elif(self.net_out==1):
+        #     y_pred = prediction
+        # elif(self.net_out==2):
+        #     z_pred = prediction
+        #
+        #
+        # if(self.net_out!=2):
+        #     rounded_act_prediction = np.argmax(y_pred,axis=-1)
+        #
+        #     # print(rounded_act_prediction)
+        #     # print(np.unique(rounded_act_prediction))
+        #     #print(rounded_act_prediction)
+        #     cm_act = confusion_matrix(y_true= Y_test, y_pred=rounded_act_prediction)
+        #     cm_plot_labels_act = range(0,self.outsize_act)
+        #     #print(cm_act)
+        #     self.plot_confusion_matrix(cm=cm_act, classes=cm_plot_labels_act, title='Confusion Matrix Next Activity')
+        #     reportNA=metrics.classification_report(Y_test, rounded_act_prediction, digits=3)
+        #     print(reportNA)
+        #     if(self.net_out==1):
+        #         return reportNA,cm_act
+        #
+        # if(self.net_out!=1):
+        #     rounded_out_prediction = np.argmax(z_pred,axis=-1)
+        #     cm_out = confusion_matrix(y_true= Z_test, y_pred=rounded_out_prediction)
+        #     cm_plot_labels_out = range(0,self.outsize_out)
+        #     #print(cm_out)
+        #     self.plot_confusion_matrix(cm=cm_out, classes=cm_plot_labels_out, title='Confusion Matrix Outcome')
+        #     reportO = metrics.classification_report(Z_test, rounded_out_prediction, digits=3)
+        #     print(reportO)
+        #     if(self.net_out==2):
+        #         return reportO,cm_out
+        #
+        # return reportNA,cm_act,reportO,cm_out
+
 
 
 
@@ -699,6 +1112,8 @@ class Manager:
     #     print(reportO)
     #
     #     return reportO,cm_out
+
+
 
     pass
 
