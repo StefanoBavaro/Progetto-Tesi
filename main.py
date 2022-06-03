@@ -32,30 +32,31 @@ import numpy
 numpy.set_printoptions(threshold=sys.maxsize)
 
 
-log_name="BPIC11_f1_Sorted"
-activity_name = "Activity code"
-case_name = "Case ID"
-timestamp_name = "time:timestamp"
-outcome_name = "label"
-delimiter = ';'
+# log_name="BPIC11_f1_Sorted"
+# activity_name = "Activity code"
+# case_name = "Case ID"
+# timestamp_name = "time:timestamp"
+# outcome_name = "label"
+# delimiter = ';'
 
-# log_name="finalThesisDataset_anon"
-# activity_name = "cat_item"
-# case_name = "request"
-# timestamp_name = "sys_updated_on"
-# outcome_name = "outcome"
-# delimiter = ','
+log_name="finalThesisDataset_anon(act_state)"
+activity_name = "act_state"
+case_name = "request"
+timestamp_name = "sys_updated_on"
+outcome_name = "outcome"
+delimiter = ','
 win_size = 4
-net_out = 0 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
-net_embedding = 1  #0 = embedding, 1 = word2vec
+net_out = 3 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
+net_embedding = 1 #0 = embedding, 1 = word2vec
+time_type = "seconds" #0 = seconds, 1 = days
 
 
-
-manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
 if(net_out!=3):
+    manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
     manager.gen_internal_csv()
     manager.csv_to_data()
 else:
+    manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter, time_type)
     manager.gen_internal_csv_timeNet()
     manager.csv_to_data_timeNet()
 
@@ -112,7 +113,7 @@ elif(net_out==1 or net_out==3):
     if(net_out==1):
         outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_singleActOutput.log', 'w')
     elif(net_out==3):
-        outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeOutput.log', 'w')
+        outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeOutput_'+time_type+'.log', 'w')
 
 elif(net_out==2):
      search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -148,13 +149,14 @@ elif(net_out==2):
 # trialsFilename = '../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)+ '/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
 
 trialsFilename = '../Progetto-Tesi/models/hpTrials/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
-
+if(net_out ==3):
+    trialsFilename = trialsFilename +'_'+ time_type
 
 best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=1,
+      max_evals=20,
       filename =trialsFilename)
 
 print(len(trials))
@@ -179,10 +181,14 @@ outfile.write("\nTotal time: %s" % totaltime)
 outfile.write("\n\nBest parameters:")
 print(best_params, file=outfile)
 
-manager.best_model.save("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
 
+if(net_out !=3):
+    manager.best_model.save("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
+elif(net_out==3):
+    manager.best_model.save("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding)+"_"+time_type + ".h5")
 print('Evaluating final models...')
-model= load_model("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
+model= manager.best_model
+#model= load_model("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
 if(net_out==0):
     reportNA,cmNA,reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
     outfile.write("\nNext activity metrics:\n")
