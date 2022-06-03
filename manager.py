@@ -27,7 +27,7 @@ from hyperopt import fmin as hpfmin, hp, tpe, Trials, space_eval, STATUS_OK
 
 class Manager:
 
-    def __init__(self, log_name, act_name, case_name, ts_name, out_name,win_size, net_out, net_embedding, delimiter):
+    def __init__(self, log_name, act_name, case_name, ts_name, out_name,win_size, net_out, net_embedding, delimiter, time_type = -1):
         self.log_name = log_name
         self.timestamp_name = ts_name
         self.case_name = case_name
@@ -38,8 +38,12 @@ class Manager:
         self.net_embedding = net_embedding
         self.delimiter = delimiter
 
+        self.time_type = time_type
 
-        self.ending_name = "seconds_to_end"
+        if(self.time_type == 0):
+            self.ending_name = "seconds_to_end"
+        elif(self.time_type==1):
+            self.ending_name = "days_to_end"
         #self.counter=0
 
         self.act_dictionary = {}
