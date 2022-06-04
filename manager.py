@@ -4,6 +4,8 @@ import pandas as pd
 import datetime
 from pathlib import Path
 import itertools
+import os
+
 
 from sklearn import preprocessing
 from sklearn import metrics
@@ -40,10 +42,12 @@ class Manager:
 
         self.time_type = time_type
 
-        if(self.time_type == 0):
+        if(self.time_type == "seconds"):
             self.ending_name = "seconds_to_end"
-        elif(self.time_type==1):
+            self.elapsed_time = "elapsed_seconds"
+        elif(self.time_type=="days"):
             self.ending_name = "days_to_end"
+            self.elapsed_time = "elapsed_days"
         #self.counter=0
 
         self.act_dictionary = {}
@@ -705,13 +709,16 @@ class Manager:
         Genera un nuovo file csv aggiungendo, per ogni traccia del csv originale,
         un'ultima attività contenente l'outcome della traccia.
         """
+
+        ##In questa tipologia di dataset il remaining_time (days or seconds to end) è già incrementato di uno (per l'aggiunta di una nuova attivita)
         print("Processing CSV...")
         filename = str(Path('../Progetto-Tesi/data/sorted_csvs/' + self.log_name + ".csv").resolve())
         data = pd.read_csv(filename, delimiter = self.delimiter)
 
 
-        data2 = data.filter([self.activity_name,self.case_name,self.timestamp_name,self.outcome_name,self.ending_name], axis=1)
+        data2 = data.filter([self.activity_name,self.case_name,self.timestamp_name,self.outcome_name,self.ending_name, self.elapsed_time], axis=1)
         data2[self.timestamp_name] = pd.to_datetime(data2[self.timestamp_name])
+        data2[self.ending_name]
         data_updated = data2.copy()
 
         num_cases = len(data_updated[self.case_name].unique())
@@ -727,32 +734,47 @@ class Manager:
             if(i!=data2.shape[0]-1):
                 if (row[self.case_name]!=data2.at[i+1,self.case_name]):
                     idx+=1
+                    elapsedTimeValue = 0
+                    if(self.time_type=="seconds"):
+                        elapsedTimeValue = row[self.elapsed_time]+1
+                    elif(self.time_type =="days"):
+                        elapsedTimeValue = float(row["elapsed_seconds"]+1) /float(86400)
+
                     line = pd.DataFrame({self.activity_name: row[self.outcome_name],
                                          self.case_name: row[self.case_name],
                                          self.timestamp_name: row[self.timestamp_name]+datetime.timedelta(seconds=1),
                                          self.outcome_name: row[self.outcome_name],
+                                         self.elapsed_time: elapsedTimeValue,
                                          self.ending_name: 0
                                          }, index=[idx])
                     data_updated = pd.concat([data_updated.iloc[:idx], line, data_updated.iloc[idx:]]).reset_index(drop=True)
             else: #ultima attività(ultimo caso), serve aggiungere l'evento outcome comunque
                 #print("last")
                 idx+=1
+                elapsedTimeValue = 0
+                if(self.time_type=="seconds"):
+                    elapsedTimeValue = row[self.elapsed_time]+1
+                elif(self.time_type =="days"):
+                    elapsedTimeValue = float(row["elapsed_seconds"]+1) /float(86400)
                 line = pd.DataFrame({self.activity_name: row[self.outcome_name],
-                                               self.case_name: row[self.case_name],
-                                               self.timestamp_name: row[self.timestamp_name]+datetime.timedelta(seconds=1),
-                                               self.outcome_name: row[self.outcome_name],
-                                               self.ending_name: 0
-                                               }, index=[idx])
+                                     self.case_name: row[self.case_name],
+                                     self.timestamp_name: row[self.timestamp_name]+datetime.timedelta(seconds=1),
+                                     self.outcome_name: row[self.outcome_name],
+                                     self.elapsed_time: elapsedTimeValue,
+                                     self.ending_name: 0
+                                     }, index=[idx])
                 data_updated = pd.concat([data_updated.iloc[:idx],line])
             idx+=1
 
         num_events = data_updated.shape[0]
         print("NUMERO EVENTI DOPO UPDATE = " + str(num_events))
 
-        self.outsize_act = len(data_updated[self.activity_name].unique())
+        self.outsize_act = len(data[self.activity_name].unique())
         #print(self.outsize_act)
-        self.outsize_out = len(data_updated[self.outcome_name].unique())
+        self.outsize_out = len(data[self.outcome_name].unique())
         #print(self.outsize_out)
+
+
 
         filename = str(Path('../Progetto-Tesi/data/updated_csvs/'+self.log_name+"_updated_timeNet.csv").resolve())
         data_updated.to_csv(filename, sep = self.delimiter)
@@ -766,9 +788,11 @@ class Manager:
         Richiama la funzione di codifica delle tracce e della costruzione delle finestre.
         """
 
+
         print("Importing data from updated CSV...")
         filename = str(Path('../Progetto-Tesi/data/updated_csvs/' + self.log_name + "_updated_timeNet.csv").resolve())
         data = pd.read_csv(filename, delimiter= self.delimiter)
+
 
         #inserisco per prime nel dizionario le label degli outcome
         outcomes = data[self.outcome_name].unique()
@@ -859,8 +883,9 @@ class Manager:
         # print(self.traces_test)
 
     def build_windows_timeNet(self,traces,seconds_traces,win_size):
-        X_vec = []
-        Y_vec = []
+        X_vec = [] #prefixes
+        el_time_vec = []
+        Y_vec = [] #
 
         print("Building windows...")
         for i in range(0,len(traces)):
@@ -879,25 +904,33 @@ class Manager:
                     current_example = np.zeros(win_size)
                 else:
                     current_example= []
+                time_current_example = np.zeros(win_size)
+
                 values = trace[0:j] if j <= win_size else \
                          trace[j - win_size:j]
+                time_values = sec_trace[0:j] if j <= win_size else \
+                         trace[j - win_size:j]
+
                 Y_vec.append(sec_trace[k])
                 #print(values)
                 current_example[win_size - len(values):] = values
+                time_current_example[win_size - len(values):] = time_values
                 #print(current_example)
                 X_vec.append(current_example)
+                el_time_vec.append(time_current_example)
                 j += 1
                 k+=1
 
         if(self.net_embedding==0):
             X_vec = np.asarray(X_vec)
+            el_time_vec = np.asarray(el_time_vec)
             Y_vec = np.asarray(Y_vec)
 
 
 
 
         print("Done: windows built")
-        return X_vec,Y_vec
+        return X_vec,el_time_vec,Y_vec
 
 
 
@@ -907,7 +940,8 @@ class Manager:
         start_time = perf_counter()
         print(start_time)
 
-        X_train,t_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.win_size)
+        X_train,X2_train, t_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.win_size)
+        print(X2_train)
         #print(t_vec)
         #
         # if(self.net_out==3):

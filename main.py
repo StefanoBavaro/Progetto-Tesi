@@ -39,15 +39,15 @@ numpy.set_printoptions(threshold=sys.maxsize)
 # outcome_name = "label"
 # delimiter = ';'
 
-log_name="finalThesisDataset_anon(act_state)"
-activity_name = "act_state"
+log_name="finalThesisDataset_anon"
+activity_name = "cat_item"
 case_name = "request"
 timestamp_name = "sys_updated_on"
 outcome_name = "outcome"
 delimiter = ','
 win_size = 4
 net_out = 3 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
-net_embedding = 1 #0 = embedding, 1 = word2vec
+net_embedding = 0 #0 = embedding, 1 = word2vec
 time_type = "seconds" #0 = seconds, 1 = days
 
 
@@ -57,7 +57,7 @@ if(net_out!=3):
     manager.csv_to_data()
 else:
     manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter, time_type)
-    manager.gen_internal_csv_timeNet()
+    #manager.gen_internal_csv_timeNet()
     manager.csv_to_data_timeNet()
 
 algorithm = tpe.suggest
@@ -156,7 +156,7 @@ best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=20,
+      max_evals=2,
       filename =trialsFilename)
 
 print(len(trials))
