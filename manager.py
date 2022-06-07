@@ -16,7 +16,7 @@ from keras.layers import Embedding, Dense, BatchNormalization, Reshape
 from keras.models import Model, load_model
 from tensorflow.keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
-from keras.layers import Input, LSTM
+from keras.layers import Input, LSTM, Concatenate
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score
@@ -699,7 +699,10 @@ class Manager:
         if(self.best_score>float(bestTrial['result']['loss'])):
             print("New best score/model found")
             print(float(bestTrial['result']['loss']))
-            self.best_model = load_model("models/generate_" + self.log_name + "_type"+str(self.net_out)+"_emb"+str(self.net_embedding) + ".h5")
+            if(self.net_out != 3):
+                self.best_model = load_model("models/generate_" + self.log_name + "_type"+str(self.net_out)+"_emb"+str(self.net_embedding) + ".h5")
+            else:
+                self.best_model = load_model("models/generate_" + self.log_name + "_type"+str(self.net_out)+"_emb"+str(self.net_embedding)+"_"+self.time_type + ".h5")
 
         return result, trials
 
@@ -716,9 +719,9 @@ class Manager:
         data = pd.read_csv(filename, delimiter = self.delimiter)
 
 
-        data2 = data.filter([self.activity_name,self.case_name,self.timestamp_name,self.outcome_name,self.ending_name, self.elapsed_time], axis=1)
+        data2 = data.filter([self.activity_name,self.case_name,self.timestamp_name,self.outcome_name,self.ending_name, "elapsed_seconds","elapsed_days"], axis=1)
         data2[self.timestamp_name] = pd.to_datetime(data2[self.timestamp_name])
-        data2[self.ending_name]
+        #data2[self.ending_name]
         data_updated = data2.copy()
 
         num_cases = len(data_updated[self.case_name].unique())
@@ -830,6 +833,8 @@ class Manager:
         self.seconds_traces = np.zeros((len(data[self.case_name].unique()),), dtype=object)
         self.seconds_traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
 
+        self.elapsed_traces = np.zeros((len(data[self.case_name].unique()),), dtype=object)
+        self.elapsed_traces[...]=[[] for _ in range(len(data[self.case_name].unique()))]
 
         if(self.net_embedding==0):
             outcomes = range(1, len(data[self.outcome_name].unique())+1)
@@ -849,9 +854,11 @@ class Manager:
                 activity_coded = ''.join(filter(str.isalnum,event[self.activity_name]))
                 #activity_coded = ''.join(filter(str.isalnum, activity_coded))
             #print(activity_coded)
-            seconds_to_ending = event[self.ending_name]
-            print(seconds_to_ending)
-            self.seconds_traces[traces_counter].append(seconds_to_ending)
+            time_to_ending = event[self.ending_name]
+            elapsed_time = event[self.elapsed_time]
+            #print(seconds_to_ending)
+            self.elapsed_traces[traces_counter].append(elapsed_time)
+            self.seconds_traces[traces_counter].append(time_to_ending)
             self.traces[traces_counter].append(activity_coded)
             #print(self.traces[traces_counter])
             if(activity_coded in outcomes):
@@ -860,7 +867,10 @@ class Manager:
         #converto ogni traccia in array piuttosto che liste
         if(self.net_embedding==0):
             for i in range(0,len(self.traces)):
+                self.elapsed_traces[i] = np.array(self.elapsed_traces[i])
+                #print(self.elapsed_traces[i])
                 self.seconds_traces[i]= np.array(self.seconds_traces[i])
+                #print(self.seconds_traces[i])
                 self.traces[i] = np.array(self.traces[i])
 
 
@@ -869,6 +879,7 @@ class Manager:
         #print(self.traces)
         self.traces_train, self.traces_test = train_test_split(self.traces, test_size=0.2, random_state=42, shuffle=False)
         self.seconds_traces_train, self.seconds_traces_test = train_test_split(self.seconds_traces, test_size=0.2, random_state=42, shuffle=False)
+        self.elapsed_traces_train, self.elapsed_traces_test = train_test_split(self.elapsed_traces, test_size=0.2, random_state=42, shuffle=False)
 
 
         # X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
@@ -882,7 +893,7 @@ class Manager:
         # print("test")
         # print(self.traces_test)
 
-    def build_windows_timeNet(self,traces,seconds_traces,win_size):
+    def build_windows_timeNet(self,traces,seconds_traces,elapsed_traces,win_size):
         X_vec = [] #prefixes
         el_time_vec = []
         Y_vec = [] #
@@ -891,7 +902,9 @@ class Manager:
         for i in range(0,len(traces)):
             trace= traces[i]
             sec_trace= seconds_traces[i]
+            elapsed_trace = elapsed_traces[i]
             #print(sec_trace)
+            #print(elapsed_trace)
             # print("TRACE:")
             # print(trace)
             k=0
@@ -908,18 +921,21 @@ class Manager:
 
                 values = trace[0:j] if j <= win_size else \
                          trace[j - win_size:j]
-                time_values = sec_trace[0:j] if j <= win_size else \
-                         trace[j - win_size:j]
+                time_values = elapsed_trace[0:j] if j <= win_size else \
+                         elapsed_trace[j - win_size:j]
 
                 Y_vec.append(sec_trace[k])
                 #print(values)
                 current_example[win_size - len(values):] = values
                 time_current_example[win_size - len(values):] = time_values
+                #print(time_current_example)
                 #print(current_example)
                 X_vec.append(current_example)
                 el_time_vec.append(time_current_example)
                 j += 1
                 k+=1
+            #print("NUOVA TRACCIA___________________")
+
 
         if(self.net_embedding==0):
             X_vec = np.asarray(X_vec)
@@ -940,12 +956,8 @@ class Manager:
         start_time = perf_counter()
         print(start_time)
 
-        X_train,X2_train, t_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.win_size)
-        print(X2_train)
-        #print(t_vec)
-        #
-        # if(self.net_out==3):
-        #     t_vec=t_vec
+        X_train,X2_train, t_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.elapsed_traces_train,self.win_size)
+        #print(X2_train)
 
         unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
         #print(unique_events)
@@ -964,11 +976,14 @@ class Manager:
             # print(type(X_train))
             # print(np.shape(X_train))
             l_input = Input(shape = (self.win_size, params['word2vec_size']), name = 'input_act')
+            X2_train = np.asarray(X2_train)
             toBePassed=l_input
 
+        elapsed_time_input = Input(shape=self.win_size, name='input_time')
+        elapsed_time_input = Reshape((-1, 1))(elapsed_time_input)
+        input_concat = Concatenate(axis=-1)([toBePassed, elapsed_time_input])
 
-
-        l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(toBePassed)
+        l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(input_concat)
         l1 = BatchNormalization()(l1)
         # if(self.net_out!=2):
         l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
@@ -994,7 +1009,7 @@ class Manager:
         output_o = Dense(1, kernel_initializer='glorot_uniform', name='time_output')(l_a)
         outputs.append(output_o)
 
-        model = Model(inputs=l_input, outputs=outputs)
+        model = Model(inputs=[l_input,elapsed_time_input], outputs=outputs)
         print(model.summary())
 
         opt = Adam(lr=params["learning_rate"])
@@ -1025,7 +1040,7 @@ class Manager:
         #     #     #history = models.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_data = (X_val, [Y_val, Z_val]))
         #     #     history = model.fit(np.asarray(X_train), [np.asarray(Y_train),np.asarray(Z_train)], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
         # else:
-        history = model.fit(X_train, np.asarray(t_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        history = model.fit([X_train, X2_train], np.asarray(t_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
 
         scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
@@ -1049,7 +1064,7 @@ class Manager:
     def evaluate_model_timeNet(self,model,embedding_size):
         #models = load_model("models/generate_" + self.log_name + ".h5")
 
-        X_test, t_test = self.build_windows_timeNet(self.traces_test,self.seconds_traces_test,self.win_size)
+        X_test, X2_test, t_test = self.build_windows_timeNet(self.traces_test,self.seconds_traces_test,self.elapsed_traces_test,self.win_size)
 
         # if(self.net_out!=2):
         #     print(np.unique(Y_test))
@@ -1068,10 +1083,11 @@ class Manager:
             w2v_model = Word2Vec.load("models/w2v/generate_"+ self.log_name+ "_size" + str(embedding_size) + ".h5")
             self.save_w2v_vocab(w2v_model)
             X_test = self.encodePrefixes(embedding_size,X_test)
+            X2_test = np.asarray(X2_test)
             # X_test = np.asarray()
 
 
-        prediction = model.predict(X_test, batch_size=128, verbose = 0)
+        prediction = model.predict([X_test, X2_test], batch_size=128, verbose = 0)
 
         print(prediction)
         mae = metrics.mean_absolute_error(t_test, prediction)
