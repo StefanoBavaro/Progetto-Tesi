@@ -455,7 +455,7 @@ class Manager:
                                            min_delta=0.0001, cooldown=0, min_lr=0)
 
             if(self.net_out==0):
-                history = model.fit(X_train, [Y_train,Z_train], epochs=1, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+                history = model.fit(X_train, [Y_train,Z_train], epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
                 # if(self.net_embedding==0):
                 #     history = model.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
                 # elif(self.net_embedding==1):
