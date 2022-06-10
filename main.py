@@ -47,9 +47,8 @@ outcome_name = "outcome"
 delimiter = ','
 win_size = 4
 net_out = 3 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
-net_embedding = 0#0 = embedding, 1 = word2vec
+net_embedding = 1#0 = embedding, 1 = word2vec
 time_type = "seconds" #0 = seconds, 1 = days
-
 
 if(net_out!=3):
     manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
@@ -156,7 +155,7 @@ best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=10,
+      max_evals=2,
       filename =trialsFilename)
 
 print(len(trials))
