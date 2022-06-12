@@ -32,36 +32,39 @@ import numpy
 numpy.set_printoptions(threshold=sys.maxsize)
 
 
-# log_name="BPIC11_f1_Sorted"
-# activity_name = "Activity code"
-# case_name = "Case ID"
-# timestamp_name = "time:timestamp"
-# outcome_name = "label"
-# delimiter = ';'
+log_name="BPIC11_f1_Sorted"
+activity_name = "Activity code"
+case_name = "Case ID"
+timestamp_name = "time:timestamp"
+outcome_name = "label"
+delimiter = ';'
 
-log_name="finalThesisDataset_anon(act_state)"
-activity_name = "act_state"
-case_name = "request"
-timestamp_name = "sys_updated_on"
-outcome_name = "outcome"
-delimiter = ','
+# log_name="finalThesisDataset_anon"
+# activity_name = "cat_item"
+# case_name = "request"
+# timestamp_name = "sys_updated_on"
+# outcome_name = "outcome"
+# delimiter = ','
 win_size = 4
-net_out = 3 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
+net_out = 1 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
 net_embedding = 1#0 = embedding, 1 = word2vec
-time_type = "seconds" #0 = seconds, 1 = days
+
+
+time_type = "days" #0 = seconds, 1 = days
+time_view_out = 1 #0 = time, 1 = outcome
 
 if(net_out!=3):
     manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
     manager.gen_internal_csv()
     manager.csv_to_data()
 else:
-    manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter, time_type)
+    manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter, time_type, time_view_out)
     manager.gen_internal_csv_timeNet()
     manager.csv_to_data_timeNet()
 
 algorithm = tpe.suggest
 
-if(net_out==0):
+if(net_out==0 or net_out==3):
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                     'word2vec_size': hp.uniformint('word2vec_size',32,1024),
                     'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
@@ -84,8 +87,16 @@ if(net_out==0):
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-    outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding) +'_doubleOutput.log', 'w')
-elif(net_out==1 or net_out==3):
+    if(net_out==0):
+        outfile = outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding) +'_doubleOutput.log', 'w')
+    elif(net_out==3):
+        if(time_view_out == 0):
+            outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeOutput_'+time_type+'.log', 'w')
+        elif(time_view_out == 1):
+            outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeViewOutcomeOutput_' + time_type+ '.log', 'w')
+
+
+elif(net_out==1):
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                     'word2vec_size': hp.uniformint('word2vec_size',32,1024),
                     'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
@@ -109,10 +120,8 @@ elif(net_out==1 or net_out==3):
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-    if(net_out==1):
-        outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_singleActOutput.log', 'w')
-    elif(net_out==3):
-        outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeOutput_'+time_type+'.log', 'w')
+
+    outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_singleActOutput.log', 'w')
 
 elif(net_out==2):
      search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -149,7 +158,7 @@ elif(net_out==2):
 
 trialsFilename = '../Progetto-Tesi/models/hpTrials/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
 if(net_out ==3):
-    trialsFilename = trialsFilename +'_'+ time_type
+    trialsFilename = trialsFilename +'_'+ time_type + '_' + str(time_view_out)
 
 best_params, trials = manager.fmin(
       fn=manager.nn,
@@ -211,9 +220,14 @@ elif(net_out==2):
     outfile.write("\nOutcome confusion matrix:\n")
     print(cmO, file=outfile)
 elif(net_out==3):
-    mae = manager.evaluate_model_timeNet(model, best_params['word2vec_size'])
-    outfile.write("\nTime prediction metrics:\n")
-    print(mae, file=outfile)
-
-
+    if(time_view_out == 0):
+        mae = manager.evaluate_model_timeNet(model, best_params['word2vec_size'])
+        outfile.write("\nTime prediction metrics:\n")
+        print(mae, file=outfile)
+    elif(time_view_out == 1):
+        reportO,cmO = manager.evaluate_model_timeNet(model,best_params['word2vec_size'])
+        outfile.write("\nOutcome metrics:\n")
+        print(reportO, file=outfile)
+        outfile.write("\nOutcome confusion matrix:\n")
+        print(cmO, file=outfile)
 

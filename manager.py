@@ -29,7 +29,7 @@ from hyperopt import fmin as hpfmin, hp, tpe, Trials, space_eval, STATUS_OK
 
 class Manager:
 
-    def __init__(self, log_name, act_name, case_name, ts_name, out_name,win_size, net_out, net_embedding, delimiter, time_type = -1):
+    def __init__(self, log_name, act_name, case_name, ts_name, out_name,win_size, net_out, net_embedding, delimiter, time_type = -1, time_view_out = -1):
         self.log_name = log_name
         self.timestamp_name = ts_name
         self.case_name = case_name
@@ -41,6 +41,7 @@ class Manager:
         self.delimiter = delimiter
 
         self.time_type = time_type
+        self.time_view_out = time_view_out
 
         if(self.time_type == "seconds"):
             self.ending_name = "seconds_to_end"
@@ -923,8 +924,12 @@ class Manager:
                          trace[j - win_size:j]
                 time_values = elapsed_trace[0:j] if j <= win_size else \
                          elapsed_trace[j - win_size:j]
+                if(self.time_view_out ==0 ):
+                    Y_vec.append(sec_trace[k])
+                elif(self.time_view_out == 1):
+                    encoded_outcome = trace[len(trace)-1]
+                    Y_vec.append(encoded_outcome)
 
-                Y_vec.append(sec_trace[k])
                 #print(values)
                 current_example[win_size - len(values):] = values
                 time_current_example[win_size - len(values):] = time_values
@@ -942,9 +947,6 @@ class Manager:
             el_time_vec = np.asarray(el_time_vec)
             Y_vec = np.asarray(Y_vec)
 
-
-
-
         print("Done: windows built")
         return X_vec,el_time_vec,Y_vec
 
@@ -956,8 +958,15 @@ class Manager:
         start_time = perf_counter()
         print(start_time)
 
-        X_train,X2_train, t_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.elapsed_traces_train,self.win_size)
+        X_train,X2_train, label_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.elapsed_traces_train,self.win_size)
         #print(X2_train)
+        print(X2_train)
+        print(label_vec)
+
+        if(self.time_view_out==1):
+            label_vec = self.leO.fit_transform(label_vec)
+            label_vec = to_categorical(label_vec)
+            #print(Z_train)
 
         unique_events = len(self.act_dictionary) #numero di diversi eventi/attività nel dataset
         #print(unique_events)
@@ -985,28 +994,27 @@ class Manager:
 
         l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(input_concat)
         l1 = BatchNormalization()(l1)
-        # if(self.net_out!=2):
-        l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
-        l_a = BatchNormalization()(l_a)
-        # if(self.net_out!=1):
-        #     l_o = LSTM(params["lstmO_size_1"],  return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
-        #     l_o = BatchNormalization()(l_o)
+        if(self.time_view_out==0):
+            l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+            l_a = BatchNormalization()(l_a)
+        elif(self.time_view_out == 1):
+            l_o = LSTM(params["lstmO_size_1"],  return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
+            l_o = BatchNormalization()(l_o)
 
         for i in range(2,n_layers+1):
-            # if(self.net_out!=2):
-            l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)],  return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
-            l_a = BatchNormalization()(l_a)
+            if(self.time_view_out==0):
+                l_a = LSTM(params["n_layers"]["lstmA_size_%s_%s" % (i, n_layers)],  return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_a)
+                l_a = BatchNormalization()(l_a)
 
-            # if(self.net_out!=1):
-            #     l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)],  return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
-            #     l_o = BatchNormalization()(l_o)
+            elif(self.time_view_out==1):
+                l_o = LSTM(params["n_layers"]["lstmO_size_%s_%s" % (i, n_layers)],  return_sequences=(n_layers != i), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l_o)
+                l_o = BatchNormalization()(l_o)
 
         outputs=[]
-        # if(self.net_out!=2):
-        #     output_l = Dense(self.outsize_act, activation='softmax', name='act_output')(l_a)
-        #     outputs.append(output_l)
-        # if(self.net_out!=1):
-        output_o = Dense(1, kernel_initializer='glorot_uniform', name='time_output')(l_a)
+        if(self.time_view_out==0):
+            output_o = Dense(1, kernel_initializer='glorot_uniform', name='time_output')(l_a)
+        elif(self.time_view_out == 1):
+            output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(l_o)
         outputs.append(output_o)
 
         model = Model(inputs=[l_input,elapsed_time_input], outputs=outputs)
@@ -1014,17 +1022,12 @@ class Manager:
 
         opt = Adam(lr=params["learning_rate"])
 
-        # if(self.net_out==0):
-        #     loss = {'act_output':'categorical_crossentropy', 'outcome_output':'categorical_crossentropy'}
-        #     loss_weights= [params['gamma'], 1-params['gamma']]
-        # if(self.net_out==1):
-        #     loss = {'act_output':'categorical_crossentropy'}
-        #     loss_weights= [1,1]
-        # if(self.net_out==2):
-        #     loss = {'outcome_output':'categorical_crossentropy'}
-        #     loss_weights=[1,1]
+        if(self.time_view_out == 0):
+            loss={'time_output':'mae'}
+        elif(self.time_view_out == 1):
+            loss = {'outcome_output':'categorical_crossentropy'}
 
-        loss={'time_output':'mae'}
+
         model.compile(loss=loss, optimizer=opt)
         early_stopping = EarlyStopping(monitor='val_loss',
                                        patience=20)
@@ -1040,7 +1043,7 @@ class Manager:
         #     #     #history = models.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_data = (X_val, [Y_val, Z_val]))
         #     #     history = model.fit(np.asarray(X_train), [np.asarray(Y_train),np.asarray(Z_train)], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
         # else:
-        history = model.fit([X_train, X2_train], np.asarray(t_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        history = model.fit([X_train, X2_train], np.asarray(label_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
 
         scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
@@ -1064,7 +1067,7 @@ class Manager:
     def evaluate_model_timeNet(self,model,embedding_size):
         #models = load_model("models/generate_" + self.log_name + ".h5")
 
-        X_test, X2_test, t_test = self.build_windows_timeNet(self.traces_test,self.seconds_traces_test,self.elapsed_traces_test,self.win_size)
+        X_test, X2_test, y_test = self.build_windows_timeNet(self.traces_test,self.seconds_traces_test,self.elapsed_traces_test,self.win_size)
 
         # if(self.net_out!=2):
         #     print(np.unique(Y_test))
@@ -1086,12 +1089,24 @@ class Manager:
             X2_test = np.asarray(X2_test)
             # X_test = np.asarray()
 
+        if(self.time_view_out == 1):
+            y_test = self.leO.transform(y_test)
+
 
         prediction = model.predict([X_test, X2_test], batch_size=128, verbose = 0)
-
         print(prediction)
-        mae = metrics.mean_absolute_error(t_test, prediction)
-        return mae
+        if(self.time_view_out == 0):
+            mae = metrics.mean_absolute_error(y_test, prediction)
+            return mae
+        elif(self.time_view_out == 1):
+            rounded_out_prediction = np.argmax(prediction,axis=-1)
+            cm_out = confusion_matrix(y_true= y_test, y_pred=rounded_out_prediction)
+            cm_plot_labels_out = range(0,self.outsize_out)
+            #print(cm_out)
+            self.plot_confusion_matrix(cm=cm_out, classes=cm_plot_labels_out, title='Confusion Matrix Outcome')
+            reportO = metrics.classification_report(y_test, rounded_out_prediction, digits=3)
+            print(reportO)
+            return reportO,cm_out
         # if(self.net_out==0):
         #     y_pred = prediction[0]
         #     z_pred = prediction[1]
