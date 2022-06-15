@@ -164,7 +164,7 @@ best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=22,
+      max_evals=1,
       filename =trialsFilename)
 
 print(len(trials))
