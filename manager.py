@@ -958,10 +958,10 @@ class Manager:
         start_time = perf_counter()
         print(start_time)
 
-        X_train,X2_train, label_vec = self.build_windows_timeNet(self.traces_train,self.seconds_traces_train,self.elapsed_traces_train,self.win_size)
-        #print(X2_train)
-        print(X2_train)
-        print(label_vec)
+        X_train,X2_train, label_vec = self.build_windows_timeNet(self.traces,self.seconds_traces,self.elapsed_traces,self.win_size)
+        print(len(X_train))
+        print(len(X2_train))
+        print(len(label_vec))
 
         if(self.time_view_out==1):
             label_vec = self.leO.fit_transform(label_vec)

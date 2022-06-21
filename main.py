@@ -32,26 +32,25 @@ import numpy
 numpy.set_printoptions(threshold=sys.maxsize)
 
 
-log_name="BPIC11_f1_Sorted"
-activity_name = "Activity code"
-case_name = "Case ID"
-timestamp_name = "time:timestamp"
-outcome_name = "label"
-delimiter = ';'
+# log_name="BPIC11_f3_Sorted"
+# activity_name = "Activity code"
+# case_name = "Case ID"
+# timestamp_name = "time:timestamp"
+# outcome_name = "label"
+# delimiter = ';'
 
-# log_name="finalThesisDataset_anon"
-# activity_name = "cat_item"
-# case_name = "request"
-# timestamp_name = "sys_updated_on"
-# outcome_name = "outcome"
-# delimiter = ','
+log_name="finalThesisDataset_anon(act_state)"
+activity_name = "act_state"
+case_name = "request"
+timestamp_name = "sys_updated_on"
+outcome_name = "outcome"
+delimiter = ','
 win_size = 4
-net_out = 1 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
+net_out = 3 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
 net_embedding = 1#0 = embedding, 1 = word2vec
 
-
-time_type = "days" #0 = seconds, 1 = days
-time_view_out = 1 #0 = time, 1 = outcome
+time_type = "seconds" #0 = seconds, 1 = days
+time_view_out = 0 #0 = time, 1 = outcome
 
 if(net_out!=3):
     manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
@@ -91,9 +90,9 @@ if(net_out==0 or net_out==3):
         outfile = outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding) +'_doubleOutput.log', 'w')
     elif(net_out==3):
         if(time_view_out == 0):
-            outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeOutput_'+time_type+'.log', 'w')
+            outfile = open('../Progetto-Tesi/data/log_files/FINAL_' + log_name+'_'+str(net_embedding) + '_TimeOutput_'+time_type+'.log', 'w')
         elif(time_view_out == 1):
-            outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_TimeViewOutcomeOutput_' + time_type+ '.log', 'w')
+            outfile = open('../Progetto-Tesi/data/log_files/FINAL_' + log_name+'_'+str(net_embedding) + '_TimeViewOutcomeOutput_' + time_type+ '.log', 'w')
 
 
 elif(net_out==1):
@@ -156,7 +155,7 @@ elif(net_out==2):
 #     print("Directory already exists \n")
 # trialsFilename = '../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)+ '/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
 
-trialsFilename = '../Progetto-Tesi/models/hpTrials/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
+trialsFilename = '../Progetto-Tesi/models/hpTrials/FINAL_'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
 if(net_out ==3):
     trialsFilename = trialsFilename +'_'+ time_type + '_' + str(time_view_out)
 
@@ -164,7 +163,7 @@ best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=1,
+      max_evals=20,
       filename =trialsFilename)
 
 print(len(trials))
@@ -193,41 +192,43 @@ print(best_params, file=outfile)
 if(net_out !=3):
     manager.best_model.save("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
 elif(net_out==3):
-    manager.best_model.save("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding)+"_"+time_type + ".h5")
-print('Evaluating final models...')
-model= manager.best_model
-#model= load_model("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
-if(net_out==0):
-    reportNA,cmNA,reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
-    outfile.write("\nNext activity metrics:\n")
-    print(reportNA, file=outfile)
-    outfile.write("\nNext activity confusion matrix:\n")
-    print(cmNA, file=outfile)
-    outfile.write("\nOutcome metrics:\n")
-    print(reportO, file=outfile)
-    outfile.write("\nOutcome confusion matrix:\n")
-    print(cmO, file=outfile)
-elif(net_out==1):
-    reportNA,cmNA = manager.evaluate_model(model,best_params['word2vec_size'])
-    outfile.write("\nNext activity metrics:\n")
-    print(reportNA, file=outfile)
-    outfile.write("\nNext activity confusion matrix:\n")
-    print(cmNA, file=outfile)
-elif(net_out==2):
-    reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
-    outfile.write("\nOutcome metrics:\n")
-    print(reportO, file=outfile)
-    outfile.write("\nOutcome confusion matrix:\n")
-    print(cmO, file=outfile)
-elif(net_out==3):
-    if(time_view_out == 0):
-        mae = manager.evaluate_model_timeNet(model, best_params['word2vec_size'])
-        outfile.write("\nTime prediction metrics:\n")
-        print(mae, file=outfile)
-    elif(time_view_out == 1):
-        reportO,cmO = manager.evaluate_model_timeNet(model,best_params['word2vec_size'])
-        outfile.write("\nOutcome metrics:\n")
-        print(reportO, file=outfile)
-        outfile.write("\nOutcome confusion matrix:\n")
-        print(cmO, file=outfile)
+    manager.best_model.save("models/generateFINAL_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding)+"_"+time_type + ".h5")
+
+
+# print('Evaluating final models...')
+# model= manager.best_model
+# #model= load_model("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
+# if(net_out==0):
+#     reportNA,cmNA,reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
+#     outfile.write("\nNext activity metrics:\n")
+#     print(reportNA, file=outfile)
+#     outfile.write("\nNext activity confusion matrix:\n")
+#     print(cmNA, file=outfile)
+#     outfile.write("\nOutcome metrics:\n")
+#     print(reportO, file=outfile)
+#     outfile.write("\nOutcome confusion matrix:\n")
+#     print(cmO, file=outfile)
+# elif(net_out==1):
+#     reportNA,cmNA = manager.evaluate_model(model,best_params['word2vec_size'])
+#     outfile.write("\nNext activity metrics:\n")
+#     print(reportNA, file=outfile)
+#     outfile.write("\nNext activity confusion matrix:\n")
+#     print(cmNA, file=outfile)
+# elif(net_out==2):
+#     reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
+#     outfile.write("\nOutcome metrics:\n")
+#     print(reportO, file=outfile)
+#     outfile.write("\nOutcome confusion matrix:\n")
+#     print(cmO, file=outfile)
+# elif(net_out==3):
+#     if(time_view_out == 0):
+#         mae = manager.evaluate_model_timeNet(model, best_params['word2vec_size'])
+#         outfile.write("\nTime prediction metrics:\n")
+#         print(mae, file=outfile)
+#     elif(time_view_out == 1):
+#         reportO,cmO = manager.evaluate_model_timeNet(model,best_params['word2vec_size'])
+#         outfile.write("\nOutcome metrics:\n")
+#         print(reportO, file=outfile)
+#         outfile.write("\nOutcome confusion matrix:\n")
+#         print(cmO, file=outfile)
 
