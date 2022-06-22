@@ -46,11 +46,11 @@ timestamp_name = "sys_updated_on"
 outcome_name = "outcome"
 delimiter = ','
 win_size = 4
-net_out = 3 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
+net_out = 2 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
 net_embedding = 1#0 = embedding, 1 = word2vec
 
-time_type = "seconds" #0 = seconds, 1 = days
-time_view_out = 0 #0 = time, 1 = outcome
+time_type = "days" #0 = seconds, 1 = days
+time_view_out =1 #0 = time, 1 = outcome
 
 if(net_out!=3):
     manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
@@ -147,7 +147,7 @@ elif(net_out==2):
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-     outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding)+ '_singleOutOutput.log', 'w')
+     outfile = open('../Progetto-Tesi/data/log_files/FINAL_' + log_name +'_'+str(net_embedding)+ '_singleOutOutput.log', 'w')
 
 # try:
 #     os.makedirs(Path('../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)))
@@ -190,7 +190,7 @@ print(best_params, file=outfile)
 
 
 if(net_out !=3):
-    manager.best_model.save("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
+    manager.best_model.save("models/generateFINAL_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
 elif(net_out==3):
     manager.best_model.save("models/generateFINAL_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding)+"_"+time_type + ".h5")
 
