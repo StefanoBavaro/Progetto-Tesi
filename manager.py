@@ -361,11 +361,11 @@ class Manager:
             start_time = perf_counter()
             print(start_time)
 
-            X_train,Y_train,Z_train = self.build_windows(self.traces_train,self.win_size)
+            X_train,Y_train,Z_train = self.build_windows(self.traces,self.win_size)
 
-            # print(X_train);
-            # print(Y_train);
-            # print(Z_train);
+            print(len(X_train));
+            print(len(Y_train));
+            print(len(Z_train));
 
             #label=None
 
@@ -988,11 +988,11 @@ class Manager:
             X2_train = np.asarray(X2_train)
             toBePassed=l_input
 
-        elapsed_time_input = Input(shape=self.win_size, name='input_time')
-        elapsed_time_input = Reshape((-1, 1))(elapsed_time_input)
-        input_concat = Concatenate(axis=-1)([toBePassed, elapsed_time_input])
+        # elapsed_time_input = Input(shape=self.win_size, name='input_time')
+        # elapsed_time_input = Reshape((-1, 1))(elapsed_time_input)
+        # input_concat = Concatenate(axis=-1)([toBePassed, elapsed_time_input])
 
-        l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(input_concat)
+        l1 = LSTM(params["shared_lstm_size"],return_sequences=True, kernel_initializer='glorot_uniform',dropout=params['dropout'])(toBePassed)
         l1 = BatchNormalization()(l1)
         if(self.time_view_out==0):
             l_a = LSTM(params["lstmA_size_1"], return_sequences=(n_layers != 1), kernel_initializer='glorot_uniform',dropout=params['dropout'])(l1)
@@ -1017,7 +1017,8 @@ class Manager:
             output_o = Dense(self.outsize_out, activation='softmax', name='outcome_output')(l_o)
         outputs.append(output_o)
 
-        model = Model(inputs=[l_input,elapsed_time_input], outputs=outputs)
+        #model = Model(inputs=[l_input,elapsed_time_input], outputs=outputs)
+        model = Model(inputs=l_input, outputs=outputs)
         print(model.summary())
 
         opt = Adam(lr=params["learning_rate"])
@@ -1043,7 +1044,7 @@ class Manager:
         #     #     #history = models.fit(X_train, [Y_train,Z_train], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_data = (X_val, [Y_val, Z_val]))
         #     #     history = model.fit(np.asarray(X_train), [np.asarray(Y_train),np.asarray(Z_train)], epochs=3, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
         # else:
-        history = model.fit([X_train, X2_train], np.asarray(label_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
+        history = model.fit(X_train, np.asarray(label_vec), epochs=300, batch_size=2**params['batch_size'], verbose=2, callbacks=[early_stopping, lr_reducer], validation_split =0.2 )
 
 
         scores = [history.history['val_loss'][epoch] for epoch in range(len(history.history['loss']))]
