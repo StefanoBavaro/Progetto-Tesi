@@ -24,3 +24,33 @@ tid,loss,time,params used
 Total time: 0:44:59.873290
 
 Best parameters:{'batch_size': 5, 'dropout': 0.2779433662701638, 'gamma': 0.36359714025578505, 'learning_rate': 0.0011587198121258161, 'lstmA_size_1': 82, 'lstmO_size_1': 28, 'n_layers': {'lstmA_size_2_3': 32, 'lstmA_size_3_3': 21, 'lstmO_size_2_3': 40, 'lstmO_size_3_3': 18, 'n_layers': 3}, 'output_dim_embedding': 11, 'shared_lstm_size': 112, 'word2vec_size': 179}
+
+Outcome metrics:
+              precision    recall  f1-score   support
+
+           0      0.564     0.939     0.705       429
+           1      0.366     0.046     0.082       326
+
+    accuracy                          0.554       755
+   macro avg      0.465     0.493     0.393       755
+weighted avg      0.479     0.554     0.436       755
+
+
+Outcome confusion matrix:
+[[403  26]
+ [311  15]]
+
+Outcome metrics:
+              precision    recall  f1-score   support
+
+           0      0.564     0.956     0.709       429
+           1      0.321     0.028     0.051       326
+
+    accuracy                          0.555       755
+   macro avg      0.443     0.492     0.380       755
+weighted avg      0.459     0.555     0.425       755
+
+
+Outcome confusion matrix:
+[[410  19]
+ [317   9]]

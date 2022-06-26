@@ -24,3 +24,10 @@ tid,loss,time,params used
 Total time: 3:03:06.158973
 
 Best parameters:{'batch_size': 3, 'dropout': 0.4006328656586674, 'gamma': 0.8446451102059943, 'learning_rate': 0.0021557726783609094, 'lstmA_size_1': 51, 'lstmO_size_1': 42, 'n_layers': {'lstmA_size_2_2': 77, 'lstmO_size_2_2': 22, 'n_layers': 2}, 'output_dim_embedding': 20, 'shared_lstm_size': 13, 'word2vec_size': 588}
+
+Time prediction metric:
+667285.7813741722
+
+Time prediction metric:
+672052.9239238411
+
