@@ -24,3 +24,11 @@ tid,loss,time,params used
 Total time: 5:11:12.898820
 
 Best parameters:{'batch_size': 3, 'dropout': 0.37198967901640295, 'gamma': 0.11707334819984849, 'learning_rate': 0.002780192059196605, 'lstmA_size_1': 44, 'lstmO_size_1': 43, 'n_layers': {'lstmA_size_2_2': 118, 'lstmO_size_2_2': 22, 'n_layers': 2}, 'output_dim_embedding': 26, 'shared_lstm_size': 51, 'word2vec_size': 878}
+
+IMPORT W2V MODEL
+Time prediction metric:
+718102.323178808
+
+RETRAIN W2V
+Time prediction metric:
+779800.8302152317
