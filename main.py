@@ -31,39 +31,26 @@ import sys
 import numpy
 numpy.set_printoptions(threshold=sys.maxsize)
 
+log_name="Production_Sorted" #event log name
+activity_name = "Activity" #name of the activity column
+case_name = "Case ID" #name of the case id column
+timestamp_name = "Complete Timestamp" #name of the timestamp column
+outcome_name = "label" #name of the outcome column
+delimiter = ',' #delimiter of the event log
+elapsedTimeCol_name = "nullElapsed"  #name of the elapsed time column (put "nullElapsed" if not used)
+remainingTimeCol_name = "nullRemaining" #name of the remaining time column (put "nullRemaining" if not used)
 
-# log_name="BPIC11_f3_Sorted"
-# activity_name = "Activity code"
-# case_name = "Case ID"
-# timestamp_name = "time:timestamp"
-# outcome_name = "label"
-# delimiter = ';'
+win_size = 4 #size of the sliding windows
+net_out = 0 #0 = double output(outcome and next activity) ; 1 = nextActivity ; 2= outcome ; 3 = completion time
+net_in = 0 #0 = no time view; 1 = time view
+net_embedding = 0 #0 = layer embedding, 1 = word2vec
+time_unit = -1 #0 = seconds, 1 = days, -1 = no time used
 
-log_name="finalThesisDataset_anon(act_state)"
-activity_name = "act_state"
-case_name = "request"
-timestamp_name = "sys_updated_on"
-outcome_name = "outcome"
-delimiter = ','
-win_size = 4
-net_out = 2 #0 = double output ; 1 = nextActivity net ; 2= outcome net ; 3 = completion time net
-net_embedding = 1#0 = embedding, 1 = word2vec
+manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter, time_unit, net_in, elapsedTimeCol_name, remainingTimeCol_name)
+manager.gen_internal_csv()
+manager.csv_to_data()
 
-time_type = "days" #0 = seconds, 1 = days
-time_view_out =1 #0 = time, 1 = outcome
-
-if(net_out!=3):
-    manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter)
-    manager.gen_internal_csv()
-    manager.csv_to_data()
-else:
-    manager = Manager(log_name, activity_name, case_name, timestamp_name, outcome_name,win_size, net_out, net_embedding, delimiter, time_type, time_view_out)
-    manager.gen_internal_csv_timeNet()
-    manager.csv_to_data_timeNet()
-
-algorithm = tpe.suggest
-
-if(net_out==0 or net_out==3):
+if(net_out==0):
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                     'word2vec_size': hp.uniformint('word2vec_size',32,1024),
                     'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
@@ -86,16 +73,8 @@ if(net_out==0 or net_out==3):
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-    if(net_out==0):
-        outfile = outfile = open('../Progetto-Tesi/data/log_files/' + log_name +'_'+str(net_embedding) +'_doubleOutput.log', 'w')
-    elif(net_out==3):
-        if(time_view_out == 0):
-            outfile = open('../Progetto-Tesi/data/log_files/FINAL_' + log_name+'_'+str(net_embedding) + '_TimeOutput_'+time_type+'.log', 'w')
-        elif(time_view_out == 1):
-            outfile = open('../Progetto-Tesi/data/log_files/FINAL_' + log_name+'_'+str(net_embedding) + '_TimeViewOutcomeOutput_' + time_type+ '.log', 'w')
 
-
-elif(net_out==1):
+elif(net_out==1 or net_out ==3): #layers lstm used for next activity prediction are used for completion time prediction as well
     search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
                     'word2vec_size': hp.uniformint('word2vec_size',32,1024),
                     'shared_lstm_size': scope.int(hp.loguniform('shared_lstm_size', np.log(10), np.log(150))),
@@ -114,13 +93,10 @@ elif(net_out==1):
                         #'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))
                      }
                     ]),
-                    'win_size':4,
                     'dropout': hp.uniform("dropout", 0, 0.5),
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-
-    outfile = open('../Progetto-Tesi/data/log_files/' + log_name+'_'+str(net_embedding) + '_singleActOutput.log', 'w')
 
 elif(net_out==2):
      search_space = {'output_dim_embedding':scope.int(hp.loguniform('output_dim_embedding', np.log(10), np.log(150))),
@@ -141,35 +117,29 @@ elif(net_out==2):
                         'lstmO_size_3_3': scope.int(hp.loguniform('lstmO_size_3_3', np.log(10), np.log(150)))
                      }
                     ]),
-                    'win_size': 4,
-                    #'gamma': hp.uniform("gamma", 0.1,0.9),
                     'dropout': hp.uniform("dropout", 0, 0.5),
                     'batch_size': scope.int(hp.uniform('batch_size', 3, 6)),
                     'learning_rate': hp.loguniform("learning_rate", np.log(0.00001), np.log(0.01))
                     }
-     outfile = open('../Progetto-Tesi/data/log_files/FINAL_' + log_name +'_'+str(net_embedding)+ '_singleOutOutput.log', 'w')
 
-# try:
-#     os.makedirs(Path('../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)))
-# except FileExistsError:
-#     print("Directory already exists \n")
-# trialsFilename = '../Progetto-Tesi/models/hpTrials/'+ log_name +'_'+ str(net_embedding)+ '_'+str(net_out)+ '/'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
+commonFileName = log_name+'_Emb'+str(net_embedding)+ '_Task'+str(net_out)+'_TimeView' + str(net_in)+ '_TimeUnit'+str(time_unit)
 
-trialsFilename = '../Progetto-Tesi/models/hpTrials/FINAL_'+log_name+'_'+str(net_embedding)+ '_'+str(net_out)
-if(net_out ==3):
-    trialsFilename = trialsFilename +'_'+ time_type + '_' + str(time_view_out)
 
+algorithm = tpe.suggest
 best_params, trials = manager.fmin(
       fn=manager.nn,
       space=search_space,
       algo=algorithm,
-      max_evals=20,
-      filename =trialsFilename)
+      max_evals=2,
+      filename =commonFileName)
 
 print(len(trials))
 
 best_params = space_eval(search_space,best_params)
 print(best_params)
+
+
+outfile = open('../Progetto-Tesi/data/log_files/' + commonFileName + '.log', 'w')
 
 outfile.write("\nHyperopt trials:")
 outfile.write("\ntid,loss,time,params used")
@@ -188,47 +158,33 @@ outfile.write("\nTotal time: %s" % totaltime)
 outfile.write("\n\nBest parameters:")
 print(best_params, file=outfile)
 
-
-if(net_out !=3):
-    manager.best_model.save("models/generateFINAL_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
+manager.best_model.save("models/generate_"+commonFileName+".h5")
+print('Evaluating final models...')
+model= manager.best_model
+if(net_out==0):
+    reportNA,cmNA,reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
+    outfile.write("\nNext activity metrics:\n")
+    print(reportNA, file=outfile)
+    outfile.write("\nNext activity confusion matrix:\n")
+    print(cmNA, file=outfile)
+    outfile.write("\nOutcome metrics:\n")
+    print(reportO, file=outfile)
+    outfile.write("\nOutcome confusion matrix:\n")
+    print(cmO, file=outfile)
+elif(net_out==1):
+    reportNA,cmNA = manager.evaluate_model(model,best_params['word2vec_size'])
+    outfile.write("\nNext activity metrics:\n")
+    print(reportNA, file=outfile)
+    outfile.write("\nNext activity confusion matrix:\n")
+    print(cmNA, file=outfile)
+elif(net_out==2):
+    reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
+    outfile.write("\nOutcome metrics:\n")
+    print(reportO, file=outfile)
+    outfile.write("\nOutcome confusion matrix:\n")
+    print(cmO, file=outfile)
 elif(net_out==3):
-    manager.best_model.save("models/generateFINAL_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding)+"_"+time_type + ".h5")
-
-
-# print('Evaluating final models...')
-# model= manager.best_model
-# #model= load_model("models/generate_" + log_name + "_type"+str(net_out)+"_emb"+str(net_embedding) + ".h5")
-# if(net_out==0):
-#     reportNA,cmNA,reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
-#     outfile.write("\nNext activity metrics:\n")
-#     print(reportNA, file=outfile)
-#     outfile.write("\nNext activity confusion matrix:\n")
-#     print(cmNA, file=outfile)
-#     outfile.write("\nOutcome metrics:\n")
-#     print(reportO, file=outfile)
-#     outfile.write("\nOutcome confusion matrix:\n")
-#     print(cmO, file=outfile)
-# elif(net_out==1):
-#     reportNA,cmNA = manager.evaluate_model(model,best_params['word2vec_size'])
-#     outfile.write("\nNext activity metrics:\n")
-#     print(reportNA, file=outfile)
-#     outfile.write("\nNext activity confusion matrix:\n")
-#     print(cmNA, file=outfile)
-# elif(net_out==2):
-#     reportO,cmO = manager.evaluate_model(model,best_params['word2vec_size'])
-#     outfile.write("\nOutcome metrics:\n")
-#     print(reportO, file=outfile)
-#     outfile.write("\nOutcome confusion matrix:\n")
-#     print(cmO, file=outfile)
-# elif(net_out==3):
-#     if(time_view_out == 0):
-#         mae = manager.evaluate_model_timeNet(model, best_params['word2vec_size'])
-#         outfile.write("\nTime prediction metrics:\n")
-#         print(mae, file=outfile)
-#     elif(time_view_out == 1):
-#         reportO,cmO = manager.evaluate_model_timeNet(model,best_params['word2vec_size'])
-#         outfile.write("\nOutcome metrics:\n")
-#         print(reportO, file=outfile)
-#         outfile.write("\nOutcome confusion matrix:\n")
-#         print(cmO, file=outfile)
+    mae = manager.evaluate_model(model, best_params['word2vec_size'])
+    outfile.write("\nTime prediction metrics:\n")
+    print(mae, file=outfile)
 
